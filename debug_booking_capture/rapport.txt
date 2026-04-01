@@ -1,76 +1,137 @@
 ======================================================================
-RAPPORT DE CAPTURE — URLs de reservation Google Flights
-Date: 2026-04-01 17:50:56
+RAPPORT — Capture URLs reservation Google Flights (flow complet)
+Date: 2026-04-01 18:04:26
 Route: YUL -> CDG
-Tentatives: 3, Succes: 0
+Tentatives: 3, Succes: 3
 ======================================================================
 
 --- Tentative 1 ---
-Timestamp:    2026-04-01 17:49:45
-Compagnie:    Air TransatPorter Airlines
-Dates:        2026-05-31 -> 2026-06-07
-Clic a:       2026-04-01 17:49:59.010054
-Statut:       ECHEC
-Erreur:       Aucune URL exploitable capturee hors de Google
+Timestamp:        2026-04-01 18:02:10
+Compagnie aller:  Air TransatPorter Airlines
+Compagnie retour: Air TransatPorter Airlines
+Dates:            2026-05-31 -> 2026-06-07
+Partenaire:       Air TransatCompagnie aérienne
+Clic a:           2026-04-01 18:02:39.443202
+Statut:           SUCCES
+URL finale:       https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_CDG&date=2026-05-31_2026-06-07
+Domaine final:    www.airtransat.com
+Offres visibles (5):
+  - Air TransatCompagnie aérienne | 759 $CA | btn='Continuer' (pas de href)
+  - Porter AirlinesCompagnie aérienne | 919 $CA | btn='Continuer' (pas de href)
+  - Gotogate | 821 $CA | btn='Continuer' (pas de href)
+  - martiGO | 789 $CA | btn='Continuer' (pas de href)
+  - FlightHub | 913 $CA | btn='Continuer' (pas de href)
 URLs externes: aucune
-Total URLs capturees: 2
+Total URLs capturees: 5
 Notes:
-  Driver demarre, ouverture de Google Flights
-  16 resultats de vol trouves
-  Compagnie detectee: Air TransatPorter Airlines
-  Bouton 'Selectionner' non trouve, clic sur la ligne de vol
-  Bouton trouve: ''
-  Clic effectue
-  URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJV2tsV1VrZHdNalJ4VG1kQlFXRlhTMUZDUnkwdExTMHRMUzB0ZG5kaVpXOHpNa0ZCUVVGQlIyNU9hM1ozUnpGUlgwVkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD
-  URLs capturees: 2 total, 0 non-Google, 0 booking
-  Seules des URLs Google ont ete observees
-  Screenshot final: C:\MesVols\debug_booking_capture\attempt_1_final.png
+  Driver demarre
+  ETAPE 1: 16 vols aller trouves
+    Compagnie aller: Air TransatPorter Airlines
+  ETAPE 2: Clic vol aller effectue
+    URL apres selection aller: ...RkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD
+  ETAPE 3: 2 vols retour trouves
+    Compagnie retour: Air TransatPorter Airlines
+  ETAPE 4: Clic vol retour effectue
+    URL apres selection retour: ...RkJFZ1ZVVXpJMU1Sb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD
+    HTML sauvegarde: C:\MesVols\debug_booking_capture\attempt_1_booking_page.html
+  ETAPE 5: 5 offres de reservation detectees
+    Offre: Air TransatCompagnie aérienne | 759 $CA | href=non
+    Offre: Porter AirlinesCompagnie aérienne | 919 $CA | href=non
+    Offre: Gotogate | 821 $CA | href=non
+    Offre: martiGO | 789 $CA | href=non
+    Offre: FlightHub | 913 $CA | href=non
+  ETAPE 6: Clic sur 'Air TransatCompagnie aérienne' (href=non)
+    Clic effectue, attente redirections...
+    Nouvel onglet detecte, switch effectue
+    URL courante: https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_
+    URLs: 5 total, 0 non-Google, 0 booking
+    SUCCES: navigateur sur www.airtransat.com
 
 --- Tentative 2 ---
-Timestamp:    2026-04-01 17:50:09
-Compagnie:    Air TransatPorter Airlines
-Dates:        2026-05-31 -> 2026-06-07
-Clic a:       2026-04-01 17:50:22.450869
-Statut:       ECHEC
-Erreur:       Aucune URL exploitable capturee hors de Google
+Timestamp:        2026-04-01 18:02:55
+Compagnie aller:  Air TransatPorter Airlines
+Compagnie retour: Air TransatPorter Airlines
+Dates:            2026-05-31 -> 2026-06-07
+Partenaire:       Air TransatCompagnie aérienne
+Clic a:           2026-04-01 18:03:24.906185
+Statut:           SUCCES
+URL finale:       https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_CDG&date=2026-05-31_2026-06-07
+Domaine final:    www.airtransat.com
+Offres visibles (5):
+  - Air TransatCompagnie aérienne | 759 $CA | btn='Continuer' (pas de href)
+  - Porter AirlinesCompagnie aérienne | 919 $CA | btn='Continuer' (pas de href)
+  - Gotogate | 821 $CA | btn='Continuer' (pas de href)
+  - FlightHub | 913 $CA | btn='Continuer' (pas de href)
+  - Ovago | 789 $CA | btn='Continuer' (pas de href)
 URLs externes: aucune
-Total URLs capturees: 2
+Total URLs capturees: 5
 Notes:
-  Driver demarre, ouverture de Google Flights
-  16 resultats de vol trouves
-  Compagnie detectee: Air TransatPorter Airlines
-  Bouton 'Selectionner' non trouve, clic sur la ligne de vol
-  Bouton trouve: ''
-  Clic effectue
-  URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJVGxabU4wSlpNRjl5YlRCQlFWbHdNVUZDUnkwdExTMHRMUzB0TFhsc2EyZ3hNMEZCUVVGQlIyNU9hM2hOVGxsTE0wZEJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD
-  URLs capturees: 2 total, 0 non-Google, 0 booking
-  Seules des URLs Google ont ete observees
-  Screenshot final: C:\MesVols\debug_booking_capture\attempt_2_final.png
+  Driver demarre
+  ETAPE 1: 16 vols aller trouves
+    Compagnie aller: Air TransatPorter Airlines
+  ETAPE 2: Clic vol aller effectue
+    URL apres selection aller: ...RkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD
+  ETAPE 3: 2 vols retour trouves
+    Compagnie retour: Air TransatPorter Airlines
+  ETAPE 4: Clic vol retour effectue
+    URL apres selection retour: ...2RVVXpJMU1TTXhHZ3NJeTlBRUVBSWFBME5CUkRnY2NJYXJBdz09EgIIACIA&hl=fr&gl=CA&curr=CAD
+    HTML sauvegarde: C:\MesVols\debug_booking_capture\attempt_2_booking_page.html
+  ETAPE 5: 5 offres de reservation detectees
+    Offre: Air TransatCompagnie aérienne | 759 $CA | href=non
+    Offre: Porter AirlinesCompagnie aérienne | 919 $CA | href=non
+    Offre: Gotogate | 821 $CA | href=non
+    Offre: FlightHub | 913 $CA | href=non
+    Offre: Ovago | 789 $CA | href=non
+  ETAPE 6: Clic sur 'Air TransatCompagnie aérienne' (href=non)
+    Clic effectue, attente redirections...
+    Nouvel onglet detecte, switch effectue
+    URL courante: https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_
+    URLs: 5 total, 0 non-Google, 0 booking
+    SUCCES: navigateur sur www.airtransat.com
 
 --- Tentative 3 ---
-Timestamp:    2026-04-01 17:50:32
-Compagnie:    Air TransatPorter Airlines
-Dates:        2026-05-31 -> 2026-06-07
-Clic a:       2026-04-01 17:50:46.271668
-Statut:       ECHEC
-Erreur:       Aucune URL exploitable capturee hors de Google
+Timestamp:        2026-04-01 18:03:41
+Compagnie aller:  Air TransatPorter Airlines
+Compagnie retour: Air TransatPorter Airlines
+Dates:            2026-05-31 -> 2026-06-07
+Partenaire:       Air TransatCompagnie aérienne
+Clic a:           2026-04-01 18:04:09.974963
+Statut:           SUCCES
+URL finale:       https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_CDG&date=2026-05-31_2026-06-07
+Domaine final:    www.airtransat.com
+Offres visibles (5):
+  - Air TransatCompagnie aérienne | 759 $CA | btn='Continuer' (pas de href)
+  - Porter AirlinesCompagnie aérienne | 919 $CA | btn='Continuer' (pas de href)
+  - Gotogate | 821 $CA | btn='Continuer' (pas de href)
+  - OOJO | 789 $CA | btn='Continuer' (pas de href)
+  - FlightHub | 913 $CA | btn='Continuer' (pas de href)
 URLs externes: aucune
-Total URLs capturees: 2
+Total URLs capturees: 12
 Notes:
-  Driver demarre, ouverture de Google Flights
-  16 resultats de vol trouves
-  Compagnie detectee: Air TransatPorter Airlines
-  Bouton 'Selectionner' non trouve, clic sur la ligne de vol
-  Bouton trouve: ''
-  Clic effectue
-  URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJUTIxcmVVRnVVbk50T0hOQlFVbG9kV2RDUnkwdExTMHRMUzB0TFMxMmRHb3hOMEZCUVVGQlIyNU9hM2x6UzFONWJWRkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD
-  URLs capturees: 2 total, 0 non-Google, 0 booking
-  Seules des URLs Google ont ete observees
-  Screenshot final: C:\MesVols\debug_booking_capture\attempt_3_final.png
+  Driver demarre
+  ETAPE 1: 16 vols aller trouves
+    Compagnie aller: Air TransatPorter Airlines
+  ETAPE 2: Clic vol aller effectue
+    URL apres selection aller: ...QkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD
+  ETAPE 3: 2 vols retour trouves
+    Compagnie retour: Air TransatPorter Airlines
+  ETAPE 4: Clic vol retour effectue
+    URL apres selection retour: ...2RVVXpJMU1TTXhHZ3NJeTlBRUVBSWFBME5CUkRnY2NJYXJBdz09EgIIACIA&hl=fr&gl=CA&curr=CAD
+    HTML sauvegarde: C:\MesVols\debug_booking_capture\attempt_3_booking_page.html
+  ETAPE 5: 5 offres de reservation detectees
+    Offre: Air TransatCompagnie aérienne | 759 $CA | href=non
+    Offre: Porter AirlinesCompagnie aérienne | 919 $CA | href=non
+    Offre: Gotogate | 821 $CA | href=non
+    Offre: OOJO | 789 $CA | href=non
+    Offre: FlightHub | 913 $CA | href=non
+  ETAPE 6: Clic sur 'Air TransatCompagnie aérienne' (href=non)
+    Clic effectue, attente redirections...
+    Nouvel onglet detecte, switch effectue
+    URL courante: https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_
+    URLs: 12 total, 0 non-Google, 0 booking
+    SUCCES: navigateur sur www.airtransat.com
 
 ======================================================================
-CONCLUSION: Aucun lien exploitable capture apres 3 tentatives.
-Google Flights ne redirige probablement pas vers un site externe
-lors du clic sur 'Selectionner' — il garde l'utilisateur dans
-son propre flow de reservation ou affiche les details du vol.
+CONCLUSION: 3/3 tentatives ont capture un lien exploitable.
+Il serait possible d'integrer cette capture dans le scraper.
 ======================================================================

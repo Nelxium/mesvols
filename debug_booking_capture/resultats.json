@@ -1,122 +1,372 @@
 [
   {
     "attempt": 1,
-    "timestamp": "2026-04-01 17:49:45",
-    "airline": "Air TransatPorter Airlines",
+    "timestamp": "2026-04-01 18:02:10",
+    "airline_outbound": "Air TransatPorter Airlines",
+    "airline_return": "Air TransatPorter Airlines",
     "depart": "2026-05-31",
     "retour": "2026-06-07",
-    "click_timestamp": "2026-04-01 17:49:59.010054",
+    "partner_clicked": "Air TransatCompagnie aérienne",
+    "offers_visible": [
+      {
+        "name": "Air TransatCompagnie aérienne",
+        "price": "759 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "Porter AirlinesCompagnie aérienne",
+        "price": "919 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "Gotogate",
+        "price": "821 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "martiGO",
+        "price": "789 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "FlightHub",
+        "price": "913 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      }
+    ],
+    "click_timestamp": "2026-04-01 18:02:39.443202",
     "urls_observed": [
       {
-        "url": "https://www.google.com/_/FlightsFrontendUi/data/batchexecute?rpcids=H028ib&source-path=%2Ftravel%2Fflights%2Fsearch&f.sid=-1346649267098564344&bl=boq_travel-frontend-flights-ui_20260330.02_p2&hl=fr&gl=CA&soc-app=162&soc-platform=1&soc-device=1&_reqid=364189&rt=c",
+        "url": "https://www.google.com/fp_204?ei=45XNadGfNPX_ru0Pl77n6AI&opi=77919732&flcl=%5B%22CAISA0NBRBoECPzQBCI3EgQIAxABGAEoATIeCgtBaXIgVHJhbnNhdAoPUG9ydGVyIEFpcmxpbmVzOgtBaXIgVHJhbnNhdA%5Cu003d%5Cu003d%22%2C%5B%22ClkKA1lVTBIZMjAyNi0wNS0zMVQxODo1MDowMC0wNDowMBoDQ0RHIhkyMDI2LTA2LTAxVDA3OjQ1OjAwKzAyOjAwKgJUUzIDMjUwOgJUU0IDMjUwSAFSAzMzMg%5Cu003d%5Cu003d%22%2C%22ClkKA0NERxIZMjAyNi0wNi0wN1QwOTo0NTowMCswMjowMBoDWVVMIhkyMDI2LTA2LTA3VDExOjM1OjAwLTA0OjAwKgJUUzIDMjUxOgJUU0IDMjUxSAFSAzMzMg%5Cu003d%5Cu003d%22%5D%5D&authuser=0",
         "type": "request",
         "domain": "www.google.com",
         "is_google": true,
         "is_booking": false
       },
       {
-        "url": "https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJV2tsV1VrZHdNalJ4VG1kQlFXRlhTMUZDUnkwdExTMHRMUzB0ZG5kaVpXOHpNa0ZCUVVGQlIyNU9hM1ozUnpGUlgwVkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
-        "type": "document",
+        "url": "https://www.google.com/gen_204?atyp=i&ct=slh&cad=&v=t1&ei=45XNadGfNPX_ru0Pl77n6AI&m=H&pv=0.8414222584257339&me=1:1775080932546,x:586,V,0,0,1904,933:0,B,1399:0,N,1,45XNadGfNPX_ru0Pl77n6AI:0,R,1,CAMQGg,589,200,96,32:0,R,1,CAMQGw,693,200,130,32:0,R,1,CAMQHA,831,200,103,32:0,R,1,CAMQHQ,941,200,71,32:0,R,1,CAMQHg,1021,200,102,32:0,R,1,CAMQHw,1131,200,112,32:0,R,1,CAMQIA,1250,200,165,32:0,R,1,CAMQIQ,1423,200,86,32:0,R,1,CAMQJQ,1218,264,103,20:6996,S,8:8143,S,-8:11216,e,B&ved=0CP___________wEQ9SFqFQoTCJGdkOPTzZMDFfW_qwcdF98ZLQ&zx=1775080959487&opi=77919732",
+        "type": "request",
         "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://www.google.com/log?format=json&hasfast=true&authuser=0",
+        "type": "request",
+        "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://play.google.com/log?hasfast=true&authuser=0&format=json",
+        "type": "request",
+        "domain": "play.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-S3GH6C8SBV&gtm=45je63v0v894436062z86674747za20gzb6674747zd6674747&_p=1775080961132&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&gdid=dYWJhMj&gtm_up=1&cid=492188594.1775080968&ul=fr-fr&sr=800x600&ir=1&uaa=&uab=&uafvl=&uamb=0&uam=&uap=Windows&uapv=&uaw=0&are=1&frm=0&pscdl=denied&_eu=EAAAAGA&_s=3&tag_exp=0~115938466~115938469~116991817~117266401~118328121&dl=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2Fflight-search-result%2Fdeparture%3FflightType%3DRT%26search%3Dflight%26gateway%3DAIRPORT_YUL-AIRPORT_CDG%26date%3D2026-05-31_2026-06-07%26pax%3D1-0-0-0-0%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3DADowPOI9nLrSwPKZgJCTkzoO8D2bbGRmGAQHLDBq5mwnkigQesAVR5_Udzsn5NCrHW9FDocTOPJny_P35p72HBZGhoOynvEuDpErC7Z4jZbv0dBDLo0%26gclsrc%3Dgf&cu=CAD&sid=1775080963&sct=1&seg=0&dr=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2FFlightSearch%2FEngine%2FManageFlightSearch%3FdepartureDate%3D2026-05-31%26departureFromCode%3DYUL%26departureToCode%3DCDG%26returnDate%3D2026-06-07%26returnFromCode%3DCDG%26returnToCode%3DYUL%26adultNumber%3D1%26childNumber%3D0%26babySeatNumber%3D0%26babyKneeNumber%3D0%26clientCode%3Dtscom%26sourceinfo1%3DHomepage%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3DADowPOI9nLrSwPKZgJCTkzoO8D2bbGRmGAQHLDBq5mwnkigQesAVR5_Udzsn5NCrHW9FDocTOPJny_P35p72HBZGhoOynvEuDpErC7Z4jZbv0dBDLo0%26gclsrc%3Dgf&dt=R%C3%A9sultats%20de%20la%20recherche%20de%20vols%20%7C%20Air%20Transat&_tu=SA&tfd=12561",
+        "type": "request",
+        "domain": "www.google-analytics.com",
         "is_google": true,
         "is_booking": false
       }
     ],
-    "final_url": "",
-    "final_domain": "",
-    "success": false,
-    "error": "Aucune URL exploitable capturee hors de Google",
+    "final_url": "https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_CDG&date=2026-05-31_2026-06-07&pax=1-0-0-0-0&utm_source=google.ca&utm_medium=meta_search&utm_campaign=roundtrip&utm_term=flight_search&utm_content=YUL-CDG&gclid=ADowPOI9nLrSwPKZgJCTkzoO8D2bbGRmGAQHLDBq5mwnkigQesAVR5_Udzsn5NCrHW9FDocTOPJny_P35p72HBZGhoOynvEuDpErC7Z4jZbv0dBDLo0&gclsrc=gf",
+    "final_domain": "www.airtransat.com",
+    "success": true,
+    "error": "",
     "notes": [
-      "Driver demarre, ouverture de Google Flights",
-      "16 resultats de vol trouves",
-      "Compagnie detectee: Air TransatPorter Airlines",
-      "Bouton 'Selectionner' non trouve, clic sur la ligne de vol",
-      "Bouton trouve: ''",
-      "Clic effectue",
-      "URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJV2tsV1VrZHdNalJ4VG1kQlFXRlhTMUZDUnkwdExTMHRMUzB0ZG5kaVpXOHpNa0ZCUVVGQlIyNU9hM1ozUnpGUlgwVkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
-      "URLs capturees: 2 total, 0 non-Google, 0 booking",
-      "Seules des URLs Google ont ete observees",
-      "Screenshot final: C:\\MesVols\\debug_booking_capture\\attempt_1_final.png"
+      "Driver demarre",
+      "ETAPE 1: 16 vols aller trouves",
+      "  Compagnie aller: Air TransatPorter Airlines",
+      "ETAPE 2: Clic vol aller effectue",
+      "  URL apres selection aller: ...RkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
+      "ETAPE 3: 2 vols retour trouves",
+      "  Compagnie retour: Air TransatPorter Airlines",
+      "ETAPE 4: Clic vol retour effectue",
+      "  URL apres selection retour: ...RkJFZ1ZVVXpJMU1Sb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
+      "  HTML sauvegarde: C:\\MesVols\\debug_booking_capture\\attempt_1_booking_page.html",
+      "ETAPE 5: 5 offres de reservation detectees",
+      "  Offre: Air TransatCompagnie aérienne | 759 $CA | href=non",
+      "  Offre: Porter AirlinesCompagnie aérienne | 919 $CA | href=non",
+      "  Offre: Gotogate | 821 $CA | href=non",
+      "  Offre: martiGO | 789 $CA | href=non",
+      "  Offre: FlightHub | 913 $CA | href=non",
+      "ETAPE 6: Clic sur 'Air TransatCompagnie aérienne' (href=non)",
+      "  Clic effectue, attente redirections...",
+      "  Nouvel onglet detecte, switch effectue",
+      "  URL courante: https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_",
+      "  URLs: 5 total, 0 non-Google, 0 booking",
+      "  SUCCES: navigateur sur www.airtransat.com"
     ]
   },
   {
     "attempt": 2,
-    "timestamp": "2026-04-01 17:50:09",
-    "airline": "Air TransatPorter Airlines",
+    "timestamp": "2026-04-01 18:02:55",
+    "airline_outbound": "Air TransatPorter Airlines",
+    "airline_return": "Air TransatPorter Airlines",
     "depart": "2026-05-31",
     "retour": "2026-06-07",
-    "click_timestamp": "2026-04-01 17:50:22.450869",
+    "partner_clicked": "Air TransatCompagnie aérienne",
+    "offers_visible": [
+      {
+        "name": "Air TransatCompagnie aérienne",
+        "price": "759 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "Porter AirlinesCompagnie aérienne",
+        "price": "919 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "Gotogate",
+        "price": "821 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "FlightHub",
+        "price": "913 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "Ovago",
+        "price": "789 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      }
+    ],
+    "click_timestamp": "2026-04-01 18:03:24.906185",
     "urls_observed": [
       {
-        "url": "https://www.google.com/_/FlightsFrontendUi/data/batchexecute?rpcids=H028ib&source-path=%2Ftravel%2Fflights%2Fsearch&f.sid=-7828999769861835505&bl=boq_travel-frontend-flights-ui_20260330.02_p2&hl=fr&gl=CA&soc-app=162&soc-platform=1&soc-device=1&_reqid=364212&rt=c",
+        "url": "https://www.google.com/log?format=json&hasfast=true&authuser=0",
         "type": "request",
         "domain": "www.google.com",
         "is_google": true,
         "is_booking": false
       },
       {
-        "url": "https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJVGxabU4wSlpNRjl5YlRCQlFWbHdNVUZDUnkwdExTMHRMUzB0TFhsc2EyZ3hNMEZCUVVGQlIyNU9hM2hOVGxsTE0wZEJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
-        "type": "document",
+        "url": "https://www.google.com/fp_204?ei=EZbNab3wEu-Sru0Ps8yvuQY&opi=77919732&flcl=%5B%22CAISA0NBRBoECPzQBCI3EgQIAxABGAEoATIeCgtBaXIgVHJhbnNhdAoPUG9ydGVyIEFpcmxpbmVzOgtBaXIgVHJhbnNhdA%5Cu003d%5Cu003d%22%2C%5B%22ClkKA1lVTBIZMjAyNi0wNS0zMVQxODo1MDowMC0wNDowMBoDQ0RHIhkyMDI2LTA2LTAxVDA3OjQ1OjAwKzAyOjAwKgJUUzIDMjUwOgJUU0IDMjUwSAFSAzMzMg%5Cu003d%5Cu003d%22%2C%22ClkKA0NERxIZMjAyNi0wNi0wN1QwOTo0NTowMCswMjowMBoDWVVMIhkyMDI2LTA2LTA3VDExOjM1OjAwLTA0OjAwKgJUUzIDMjUxOgJUU0IDMjUxSAFSAzMzMg%5Cu003d%5Cu003d%22%5D%5D&authuser=0",
+        "type": "request",
         "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://www.google.com/gen_204?atyp=i&ct=slh&cad=&v=t1&ei=EZbNab3wEu-Sru0Ps8yvuQY&m=H&pv=0.9411596658900601&me=1:1775080977966,x:494,V,0,0,1904,933:0,B,1399:0,N,1,EZbNab3wEu-Sru0Ps8yvuQY:0,R,1,CAMQGg,589,200,96,32:0,R,1,CAMQGw,693,200,130,32:0,R,1,CAMQHA,831,200,103,32:0,R,1,CAMQHQ,941,200,71,32:0,R,1,CAMQHg,1021,200,102,32:0,R,1,CAMQHw,1131,200,112,32:0,R,1,CAMQIA,1250,200,165,32:0,R,1,CAMQIQ,1423,200,86,32:0,R,1,CAMQJQ,1218,264,103,20:7117,S,8:8090,S,-8:11282,e,B&ved=0CP___________wEQ9SFqFQoTCP285vjTzZMDFW-JqwcdM-YrZw&zx=1775081004950&opi=77919732",
+        "type": "request",
+        "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://play.google.com/log?hasfast=true&authuser=0&format=json",
+        "type": "request",
+        "domain": "play.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-S3GH6C8SBV&gtm=45je6410h2v894436062z86674747za20gzb6674747zd6674747&_p=1775081006565&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&gdid=dYWJhMj&gtm_up=1&cid=35401451.1775081014&ul=fr-fr&sr=800x600&ir=1&uaa=&uab=&uafvl=&uamb=0&uam=&uap=Windows&uapv=&uaw=0&are=1&frm=0&pscdl=denied&_eu=EAAAAGA&_s=3&tag_exp=0~115938466~115938468~116133313~116991816~117266402~118328122&dl=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2Fflight-search-result%2Fdeparture%3FflightType%3DRT%26search%3Dflight%26gateway%3DAIRPORT_YUL-AIRPORT_CDG%26date%3D2026-05-31_2026-06-07%26pax%3D1-0-0-0-0%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3DADowPOItpwyzv_EH_AWCgS3T8xUhUFXKRT6zhDgsk1ZVDwx4PwPJvNlHM-PvmSBqu3wMx16ZH_GE048hoH9BXtoC7nNY1LgSm2q4uMPNQsJZaPo2fAM%26gclsrc%3Dgf&cu=CAD&sid=1775081008&sct=1&seg=0&dr=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2FFlightSearch%2FEngine%2FManageFlightSearch%3FdepartureDate%3D2026-05-31%26departureFromCode%3DYUL%26departureToCode%3DCDG%26returnDate%3D2026-06-07%26returnFromCode%3DCDG%26returnToCode%3DYUL%26adultNumber%3D1%26childNumber%3D0%26babySeatNumber%3D0%26babyKneeNumber%3D0%26clientCode%3Dtscom%26sourceinfo1%3DHomepage%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3DADowPOItpwyzv_EH_AWCgS3T8xUhUFXKRT6zhDgsk1ZVDwx4PwPJvNlHM-PvmSBqu3wMx16ZH_GE048hoH9BXtoC7nNY1LgSm2q4uMPNQsJZaPo2fAM%26gclsrc%3Dgf&dt=R%C3%A9sultats%20de%20la%20recherche%20de%20vols%20%7C%20Air%20Transat&_tu=SA&tfd=12538",
+        "type": "request",
+        "domain": "www.google-analytics.com",
         "is_google": true,
         "is_booking": false
       }
     ],
-    "final_url": "",
-    "final_domain": "",
-    "success": false,
-    "error": "Aucune URL exploitable capturee hors de Google",
+    "final_url": "https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_CDG&date=2026-05-31_2026-06-07&pax=1-0-0-0-0&utm_source=google.ca&utm_medium=meta_search&utm_campaign=roundtrip&utm_term=flight_search&utm_content=YUL-CDG&gclid=ADowPOItpwyzv_EH_AWCgS3T8xUhUFXKRT6zhDgsk1ZVDwx4PwPJvNlHM-PvmSBqu3wMx16ZH_GE048hoH9BXtoC7nNY1LgSm2q4uMPNQsJZaPo2fAM&gclsrc=gf",
+    "final_domain": "www.airtransat.com",
+    "success": true,
+    "error": "",
     "notes": [
-      "Driver demarre, ouverture de Google Flights",
-      "16 resultats de vol trouves",
-      "Compagnie detectee: Air TransatPorter Airlines",
-      "Bouton 'Selectionner' non trouve, clic sur la ligne de vol",
-      "Bouton trouve: ''",
-      "Clic effectue",
-      "URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJVGxabU4wSlpNRjl5YlRCQlFWbHdNVUZDUnkwdExTMHRMUzB0TFhsc2EyZ3hNMEZCUVVGQlIyNU9hM2hOVGxsTE0wZEJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
-      "URLs capturees: 2 total, 0 non-Google, 0 booking",
-      "Seules des URLs Google ont ete observees",
-      "Screenshot final: C:\\MesVols\\debug_booking_capture\\attempt_2_final.png"
+      "Driver demarre",
+      "ETAPE 1: 16 vols aller trouves",
+      "  Compagnie aller: Air TransatPorter Airlines",
+      "ETAPE 2: Clic vol aller effectue",
+      "  URL apres selection aller: ...RkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
+      "ETAPE 3: 2 vols retour trouves",
+      "  Compagnie retour: Air TransatPorter Airlines",
+      "ETAPE 4: Clic vol retour effectue",
+      "  URL apres selection retour: ...2RVVXpJMU1TTXhHZ3NJeTlBRUVBSWFBME5CUkRnY2NJYXJBdz09EgIIACIA&hl=fr&gl=CA&curr=CAD",
+      "  HTML sauvegarde: C:\\MesVols\\debug_booking_capture\\attempt_2_booking_page.html",
+      "ETAPE 5: 5 offres de reservation detectees",
+      "  Offre: Air TransatCompagnie aérienne | 759 $CA | href=non",
+      "  Offre: Porter AirlinesCompagnie aérienne | 919 $CA | href=non",
+      "  Offre: Gotogate | 821 $CA | href=non",
+      "  Offre: FlightHub | 913 $CA | href=non",
+      "  Offre: Ovago | 789 $CA | href=non",
+      "ETAPE 6: Clic sur 'Air TransatCompagnie aérienne' (href=non)",
+      "  Clic effectue, attente redirections...",
+      "  Nouvel onglet detecte, switch effectue",
+      "  URL courante: https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_",
+      "  URLs: 5 total, 0 non-Google, 0 booking",
+      "  SUCCES: navigateur sur www.airtransat.com"
     ]
   },
   {
     "attempt": 3,
-    "timestamp": "2026-04-01 17:50:32",
-    "airline": "Air TransatPorter Airlines",
+    "timestamp": "2026-04-01 18:03:41",
+    "airline_outbound": "Air TransatPorter Airlines",
+    "airline_return": "Air TransatPorter Airlines",
     "depart": "2026-05-31",
     "retour": "2026-06-07",
-    "click_timestamp": "2026-04-01 17:50:46.271668",
+    "partner_clicked": "Air TransatCompagnie aérienne",
+    "offers_visible": [
+      {
+        "name": "Air TransatCompagnie aérienne",
+        "price": "759 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "Porter AirlinesCompagnie aérienne",
+        "price": "919 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "Gotogate",
+        "price": "821 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "OOJO",
+        "price": "789 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      },
+      {
+        "name": "FlightHub",
+        "price": "913 $CA",
+        "button_text": "Continuer",
+        "href": ""
+      }
+    ],
+    "click_timestamp": "2026-04-01 18:04:09.974963",
     "urls_observed": [
       {
-        "url": "https://www.google.com/_/FlightsFrontendUi/data/batchexecute?rpcids=H028ib&source-path=%2Ftravel%2Fflights%2Fsearch&f.sid=7794926245542584160&bl=boq_travel-frontend-flights-ui_20260330.02_p2&hl=fr&gl=CA&soc-app=162&soc-platform=1&soc-device=1&_reqid=364236&rt=c",
+        "url": "https://www.google.com/log?format=json&hasfast=true&authuser=0",
         "type": "request",
         "domain": "www.google.com",
         "is_google": true,
         "is_booking": false
       },
       {
-        "url": "https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJUTIxcmVVRnVVbk50T0hOQlFVbG9kV2RDUnkwdExTMHRMUzB0TFMxMmRHb3hOMEZCUVVGQlIyNU9hM2x6UzFONWJWRkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
-        "type": "document",
+        "url": "https://www.google.com/fp_204?ei=PpbNad-5Lfy6ru0PxJCNkQ4&opi=77919732&flcl=%5B%22CAISA0NBRBoECPzQBCI3EgQIAxABGAEoATIeCgtBaXIgVHJhbnNhdAoPUG9ydGVyIEFpcmxpbmVzOgtBaXIgVHJhbnNhdA%5Cu003d%5Cu003d%22%2C%5B%22ClkKA1lVTBIZMjAyNi0wNS0zMVQxODo1MDowMC0wNDowMBoDQ0RHIhkyMDI2LTA2LTAxVDA3OjQ1OjAwKzAyOjAwKgJUUzIDMjUwOgJUU0IDMjUwSAFSAzMzMg%5Cu003d%5Cu003d%22%2C%22ClkKA0NERxIZMjAyNi0wNi0wN1QwOTo0NTowMCswMjowMBoDWVVMIhkyMDI2LTA2LTA3VDExOjM1OjAwLTA0OjAwKgJUUzIDMjUxOgJUU0IDMjUxSAFSAzMzMg%5Cu003d%5Cu003d%22%5D%5D&authuser=0",
+        "type": "request",
         "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://www.google.com/gen_204?atyp=i&ct=slh&cad=&v=t1&ei=PpbNad-5Lfy6ru0PxJCNkQ4&m=H&pv=0.4798017246457914&me=1:1775081023445,x:217,V,0,0,1904,933:0,B,1399:0,N,1,PpbNad-5Lfy6ru0PxJCNkQ4:0,R,1,CAMQGg,589,200,96,32:0,R,1,CAMQGw,693,200,130,32:0,R,1,CAMQHA,831,200,103,32:0,R,1,CAMQHQ,941,200,71,32:0,R,1,CAMQHg,1021,200,102,32:0,R,1,CAMQHw,1131,200,112,32:0,R,1,CAMQIA,1250,200,165,32:0,R,1,CAMQIQ,1423,200,86,32:0,R,1,CAMQJQ,1218,264,103,20:6963,S,8:8076,S,-8:11322,e,B&ved=0CP___________wEQ9SFqFQoTCN_Qu47UzZMDFXydqwcdREgj4g&zx=1775081050024&opi=77919732",
+        "type": "request",
+        "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://play.google.com/log?hasfast=true&authuser=0&format=json",
+        "type": "request",
+        "domain": "play.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-S3GH6C8SBV&gtm=45je63v0v894436062z86674747za20gzb6674747zd6674747&_p=1775081054214&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&gdid=dYWJhMj&gtm_up=1&cid=619733152.1775081062&ul=fr-fr&sr=800x600&ir=1&uaa=&uab=&uafvl=&uamb=0&uam=&uap=Windows&uapv=&uaw=0&are=1&frm=0&pscdl=denied&_eu=EAAAAGA&_s=1&tag_exp=0~115938465~115938468~116991817~118128923~118328142&dl=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2Fflight-search-result%2Fdeparture%3FflightType%3DRT%26search%3Dflight%26gateway%3DAIRPORT_YUL-AIRPORT_CDG%26date%3D2026-05-31_2026-06-07%26pax%3D1-0-0-0-0%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3DADowPOIdMyt9_3_EgPSlFxL12BCD2F8Y7CZ9K3WY9bklKpWIcLjxvKY4LJkpBFEzQPy9bh2dc6RvEwRU23K2_JY-dnc01jWSqLBhWc6YtOimm6OI1Ug%26gclsrc%3Dgf&sid=1775081056&sct=1&seg=0&dr=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2FFlightSearch%2FEngine%2FManageFlightSearch%3FdepartureDate%3D2026-05-31%26departureFromCode%3DYUL%26departureToCode%3DCDG%26returnDate%3D2026-06-07%26returnFromCode%3DCDG%26returnToCode%3DYUL%26adultNumber%3D1%26childNumber%3D0%26babySeatNumber%3D0%26babyKneeNumber%3D0%26clientCode%3Dtscom%26sourceinfo1%3DHomepage%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3DADowPOIdMyt9_3_EgPSlFxL12BCD2F8Y7CZ9K3WY9bklKpWIcLjxvKY4LJkpBFEzQPy9bh2dc6RvEwRU23K2_JY-dnc01jWSqLBhWc6YtOimm6OI1Ug%26gclsrc%3Dgf&dt=R%C3%A9sultats%20de%20la%20recherche%20de%20vols%20%7C%20Air%20Transat&_tu=aA&tfd=7503",
+        "type": "request",
+        "domain": "www.google-analytics.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://pagead2.googlesyndication.com/measurement/conversion?random=1775081056515&cv=11&tid=G-S3GH6C8SBV&fst=1775081056515&fmt=8&en=display_flight_results&gtm=45je63v0v894436062z86674747za20gzb6674747zd6674747xec&gcs=G100&gcd=13p3p3p3p5l1&dma_cps=-&dma=0&tag_exp=0~115938465~115938468~116991817~118128923~118328142&u_w=800&u_h=600&url=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2Fflight-search-result%2Fdeparture%3FflightType%3DRT%26search%3Dflight%26gateway%3DAIRPORT_YUL-AIRPORT_CDG%26date%3D2026-05-31_2026-06-07%26pax%3D1-0-0-0-0%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3D0%26gclsrc%3Dgf&ref=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2FFlightSearch%2FEngine%2FManageFlightSearch%3FdepartureDate%3D2026-05-31%26departureFromCode%3DYUL%26departureToCode%3DCDG%26returnDate%3D2026-06-07%26returnFromCode%3DCDG%26returnToCode%3DYUL%26adultNumber%3D1%26childNumber%3D0%26babySeatNumber%3D0%26babyKneeNumber%3D0%26clientCode%3Dtscom%26sourceinfo1%3DHomepage%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3D0%26gclsrc%3Dgf&gacid=619733152.1775081062&frm=0&tiba=R%C3%A9sultats%20de%20la%20recherche%20de%20vols%20%7C%20Air%20Transat&gdid=dYWJhMj&npa=1&pscdl=denied&uaa=&uab=&uafvl=&uamb=0&uam=&uap=Windows&uapv=&uaw=0&_tu=SA",
+        "type": "request",
+        "domain": "pagead2.googlesyndication.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-S3GH6C8SBV&gtm=45je63v0v894436062z86674747za20gzb6674747zd6674747&_p=1775081054214&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&gdid=dYWJhMj&gtm_up=1&cid=619733152.1775081062&ul=fr-fr&sr=800x600&ir=1&uaa=&uab=&uafvl=&uamb=0&uam=&uap=Windows&uapv=&uaw=0&are=1&frm=0&pscdl=denied&_prs=ok&_eu=EAAAAGA&_s=2&tag_exp=0~115938465~115938468~116991817~118128923~118328142&dl=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2Fflight-search-result%2Fdeparture%3FflightType%3DRT%26search%3Dflight%26gateway%3DAIRPORT_YUL-AIRPORT_CDG%26date%3D2026-05-31_2026-06-07%26pax%3D1-0-0-0-0%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3DADowPOIdMyt9_3_EgPSlFxL12BCD2F8Y7CZ9K3WY9bklKpWIcLjxvKY4LJkpBFEzQPy9bh2dc6RvEwRU23K2_JY-dnc01jWSqLBhWc6YtOimm6OI1Ug%26gclsrc%3Dgf&sid=1775081056&sct=1&seg=0&dr=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2FFlightSearch%2FEngine%2FManageFlightSearch%3FdepartureDate%3D2026-05-31%26departureFromCode%3DYUL%26departureToCode%3DCDG%26returnDate%3D2026-06-07%26returnFromCode%3DCDG%26returnToCode%3DYUL%26adultNumber%3D1%26childNumber%3D0%26babySeatNumber%3D0%26babyKneeNumber%3D0%26clientCode%3Dtscom%26sourceinfo1%3DHomepage%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3DADowPOIdMyt9_3_EgPSlFxL12BCD2F8Y7CZ9K3WY9bklKpWIcLjxvKY4LJkpBFEzQPy9bh2dc6RvEwRU23K2_JY-dnc01jWSqLBhWc6YtOimm6OI1Ug%26gclsrc%3Dgf&dt=R%C3%A9sultats%20de%20la%20recherche%20de%20vols%20%7C%20Air%20Transat&_tu=SA&tfd=7511",
+        "type": "request",
+        "domain": "www.google-analytics.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://pagead2.googlesyndication.com/ccm/collect?frm=0&ae=g&en=page_view&gclid=0&gclsrc=gf&dr=www.airtransat.com&dl=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2Fflight-search-result%2Fdeparture&scrsrc=www.googletagmanager.com&rnd=1590462910.1775081062&navt=n&npa=1&ep.ads_data_redaction=1&gdid=dYWJhMj&_tu=CA&gtm=45He63v0v6674747za200zd6674747xea&gcs=G100&gcd=13p3p3p3p5l1&dma_cps=-&dma=0&tag_exp=0~115616986~115938465~115938469~116991816~118131809~118328121&apve=1&apvf=f&apvc=1&tft=1775081061531&tfd=7514",
+        "type": "request",
+        "domain": "pagead2.googlesyndication.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://ade.googlesyndication.com/ddm/activity/src=4509082;type=pv0;cat=ts-to0;ord=9362483537230;npa=1;u22=www.airtransat.com%2Ffr-ca%2Fflight-search-result%2Fdeparture;gdid=dYWJhMj;uaa=;uab=;uafvl=;uamb=0;uam=;uap=Windows;uapv=;uaw=0;pscdl=denied;frm=0;_tu=KFA;gtm=45fe63v0v9176711725z86674747za20gzb6674747zd6674747xea;gcs=G100;gcd=13p3p3p3p5l1;dma_cps=-;dma=0;dc_fmt=8;tag_exp=0~115938465~115938468~116133313~116991816~118328122;epver=2;~oref=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2Fflight-search-result%2Fdeparture%3FflightType%3DRT%26search%3Dflight%26gateway%3DA%3AYUL-A%3ACDG%26date%3D2026-05-31_2026-06-07%26pax%3D1-0-0-0-0%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3D0%26gclsrc%3Dgf?",
+        "type": "request",
+        "domain": "ade.googlesyndication.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://ade.googlesyndication.com/ddm/activity/src=4509082;type=purch0;cat=tsste0;ord=2565259526770;npa=1;u1=CDG;u2=YUL;u3=CDG;u4=YUL;u5=1;u6=0;u7=0;u8=2026-04-01;u9=2026-05-31;u10=;u11=;u12=;u13=N;u17=category;u18=fr;u19=flight;gdid=dYWJhMj;uaa=;uab=;uafvl=;uamb=0;uam=;uap=Windows;uapv=;uaw=0;pscdl=denied;frm=0;_tu=CFA;gtm=45fe63v0v9176711725z86674747za20gzb6674747zd6674747xea;gcs=G100;gcd=13p3p3p3p5l1;dma_cps=-;dma=0;dc_fmt=8;tag_exp=0~115938465~115938468~116133313~116991816~118328122;epver=2;~oref=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2Fflight-search-result%2Fdeparture%3FflightType%3DRT%26search%3Dflight%26gateway%3DAIRPORT_YUL-AIRPORT_CDG%26date%3D2026-05-31_2026-06-07%26pax%3D1-0-0-0-0%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3D0%26gclsrc%3Dgf?",
+        "type": "request",
+        "domain": "ade.googlesyndication.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://ade.googlesyndication.com/ddm/activity/src=4509082;dc_pre=CKmE8aDUzZMDFRAJDAIdtaM26w;type=pv0;cat=ts-to0;ord=9362483537230;npa=1;u22=www.airtransat.com%2Ffr-ca%2Fflight-search-result%2Fdeparture;gdid=dYWJhMj;uaa=;uab=;uafvl=;uamb=0;uam=;uap=Windows;uapv=;uaw=0;pscdl=denied;frm=0;_tu=KFA;gtm=45fe63v0v9176711725z86674747za20gzb6674747zd6674747xea;gcs=G100;gcd=13p3p3p3p5l1;dma_cps=-;dma=0;dc_fmt=8;tag_exp=0~115938465~115938468~116133313~116991816~118328122;epver=2;~oref=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2Fflight-search-result%2Fdeparture%3FflightType%3DRT%26search%3Dflight%26gateway%3DA%3AYUL-A%3ACDG%26date%3D2026-05-31_2026-06-07%26pax%3D1-0-0-0-0%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3D0%26gclsrc%3Dgf?",
+        "type": "request",
+        "domain": "ade.googlesyndication.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://ade.googlesyndication.com/ddm/activity/src=4509082;dc_pre=CMOF8aDUzZMDFcqzWgUdB4YYNg;type=purch0;cat=tsste0;ord=2565259526770;npa=1;u1=CDG;u2=YUL;u3=CDG;u4=YUL;u5=1;u6=0;u7=0;u8=2026-04-01;u9=2026-05-31;u10=;u11=;u12=;u13=N;u17=category;u18=fr;u19=flight;gdid=dYWJhMj;uaa=;uab=;uafvl=;uamb=0;uam=;uap=Windows;uapv=;uaw=0;pscdl=denied;frm=0;_tu=CFA;gtm=45fe63v0v9176711725z86674747za20gzb6674747zd6674747xea;gcs=G100;gcd=13p3p3p3p5l1;dma_cps=-;dma=0;dc_fmt=8;tag_exp=0~115938465~115938468~116133313~116991816~118328122;epver=2;~oref=https%3A%2F%2Fwww.airtransat.com%2Ffr-CA%2Fflight-search-result%2Fdeparture%3FflightType%3DRT%26search%3Dflight%26gateway%3DAIRPORT_YUL-AIRPORT_CDG%26date%3D2026-05-31_2026-06-07%26pax%3D1-0-0-0-0%26utm_source%3Dgoogle.ca%26utm_medium%3Dmeta_search%26utm_campaign%3Droundtrip%26utm_term%3Dflight_search%26utm_content%3DYUL-CDG%26gclid%3D0%26gclsrc%3Dgf?",
+        "type": "request",
+        "domain": "ade.googlesyndication.com",
         "is_google": true,
         "is_booking": false
       }
     ],
-    "final_url": "",
-    "final_domain": "",
-    "success": false,
-    "error": "Aucune URL exploitable capturee hors de Google",
+    "final_url": "https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_CDG&date=2026-05-31_2026-06-07&pax=1-0-0-0-0&utm_source=google.ca&utm_medium=meta_search&utm_campaign=roundtrip&utm_term=flight_search&utm_content=YUL-CDG&gclid=ADowPOIdMyt9_3_EgPSlFxL12BCD2F8Y7CZ9K3WY9bklKpWIcLjxvKY4LJkpBFEzQPy9bh2dc6RvEwRU23K2_JY-dnc01jWSqLBhWc6YtOimm6OI1Ug&gclsrc=gf",
+    "final_domain": "www.airtransat.com",
+    "success": true,
+    "error": "",
     "notes": [
-      "Driver demarre, ouverture de Google Flights",
-      "16 resultats de vol trouves",
-      "Compagnie detectee: Air TransatPorter Airlines",
-      "Bouton 'Selectionner' non trouve, clic sur la ligne de vol",
-      "Bouton trouve: ''",
-      "Clic effectue",
-      "URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJUTIxcmVVRnVVbk50T0hOQlFVbG9kV2RDUnkwdExTMHRMUzB0TFMxMmRHb3hOMEZCUVVGQlIyNU9hM2x6UzFONWJWRkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
-      "URLs capturees: 2 total, 0 non-Google, 0 booking",
-      "Seules des URLs Google ont ete observees",
-      "Screenshot final: C:\\MesVols\\debug_booking_capture\\attempt_3_final.png"
+      "Driver demarre",
+      "ETAPE 1: 16 vols aller trouves",
+      "  Compagnie aller: Air TransatPorter Airlines",
+      "ETAPE 2: Clic vol aller effectue",
+      "  URL apres selection aller: ...QkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
+      "ETAPE 3: 2 vols retour trouves",
+      "  Compagnie retour: Air TransatPorter Airlines",
+      "ETAPE 4: Clic vol retour effectue",
+      "  URL apres selection retour: ...2RVVXpJMU1TTXhHZ3NJeTlBRUVBSWFBME5CUkRnY2NJYXJBdz09EgIIACIA&hl=fr&gl=CA&curr=CAD",
+      "  HTML sauvegarde: C:\\MesVols\\debug_booking_capture\\attempt_3_booking_page.html",
+      "ETAPE 5: 5 offres de reservation detectees",
+      "  Offre: Air TransatCompagnie aérienne | 759 $CA | href=non",
+      "  Offre: Porter AirlinesCompagnie aérienne | 919 $CA | href=non",
+      "  Offre: Gotogate | 821 $CA | href=non",
+      "  Offre: OOJO | 789 $CA | href=non",
+      "  Offre: FlightHub | 913 $CA | href=non",
+      "ETAPE 6: Clic sur 'Air TransatCompagnie aérienne' (href=non)",
+      "  Clic effectue, attente redirections...",
+      "  Nouvel onglet detecte, switch effectue",
+      "  URL courante: https://www.airtransat.com/fr-CA/flight-search-result/departure?flightType=RT&search=flight&gateway=AIRPORT_YUL-AIRPORT_",
+      "  URLs: 12 total, 0 non-Google, 0 booking",
+      "  SUCCES: navigateur sur www.airtransat.com"
     ]
   }
 ]
