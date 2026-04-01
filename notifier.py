@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 from urllib.request import Request, urlopen
 
 from config import GMAIL_ADDRESS, GMAIL_APP_PASSWORD, ALERT_RECIPIENTS, DISCORD_WEBHOOK_URL
+from links import build_skyscanner_url
 
 
 def send_deal_alert(deals):
@@ -68,17 +69,14 @@ def send_deal_alert(deals):
         score_stars = "&#9733;" * score + "&#9734;" * (5 - score) if score else ""
 
         # Construire l'URL de reservation (Skyscanner)
-        origin = deal.get("origin", "YUL")
-        dest = deal.get("destination", "")
         depart = deal.get("depart", "")
         retour = deal.get("retour", "")
-        sky_dep = depart.replace("-", "")[2:]
-        sky_ret = retour.replace("-", "")[2:]
-        booking_url = (
-            f"https://www.skyscanner.ca/transport/flights/"
-            f"{origin.lower()}/{dest.lower()}/{sky_dep}/{sky_ret}/"
-            f"?adultsv2=1&currency=CAD&locale=fr-CA&market=CA"
-        )
+        booking_url = build_skyscanner_url({
+            "origin": deal.get("origin", "YUL"),
+            "destination": deal.get("destination", ""),
+            "depart_date": depart,
+            "return_date": retour,
+        })
 
         # Badge escales
         if is_direct:
@@ -236,17 +234,14 @@ def send_discord_alert(deals):
             color = 0xe85d24
 
         # URL de reservation Skyscanner
-        origin = deal.get("origin", "YUL")
-        dest = deal.get("destination", "")
         depart = deal.get("depart", "")
         retour = deal.get("retour", "")
-        sky_dep = depart.replace("-", "")[2:]
-        sky_ret = retour.replace("-", "")[2:]
-        booking_url = (
-            f"https://www.skyscanner.ca/transport/flights/"
-            f"{origin.lower()}/{dest.lower()}/{sky_dep}/{sky_ret}/"
-            f"?adultsv2=1&currency=CAD&locale=fr-CA&market=CA"
-        )
+        booking_url = build_skyscanner_url({
+            "origin": deal.get("origin", "YUL"),
+            "destination": deal.get("destination", ""),
+            "depart_date": depart,
+            "return_date": retour,
+        })
 
         # Badges texte
         tags = []

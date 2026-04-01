@@ -11,6 +11,7 @@ from collections import defaultdict
 from scraper import run_scraper
 from analyzer import find_deals, parse_stops, compute_score
 from notifier import send_deal_alert
+from links import build_skyscanner_url
 
 CSV_PATH = os.path.join(os.path.dirname(__file__), "prix_vols.csv")
 DATA_JS_PATH = os.path.join(os.path.dirname(__file__), "data.js")
@@ -69,13 +70,10 @@ def generate_data_js():
         price_g, price_s = r["price_google"], r["price_skyscanner"]
 
         # URL Skyscanner
-        sky_dep = depart.replace("-", "")[2:]
-        sky_ret = retour.replace("-", "")[2:]
-        skyscanner_url = (
-            f"https://www.skyscanner.ca/transport/flights/"
-            f"{origin.lower()}/{dest.lower()}/{sky_dep}/{sky_ret}/"
-            f"?adultsv2=1&currency=CAD&locale=fr-CA&market=CA"
-        )
+        skyscanner_url = build_skyscanner_url({
+            "origin": origin, "destination": dest,
+            "depart_date": depart, "return_date": retour,
+        })
         # URL Google Flights
         google_url = (f"https://www.google.com/travel/flights"
                       f"?q=flights+from+{origin}+to+{dest}"
