@@ -180,10 +180,9 @@ def generate_data_js():
     # Calculer best_offer par destination (meilleur prix des 3 horizons du dernier scrape)
     best_offers = {}
     if flights:
-        latest_date = last_date[:10]
         by_dest = defaultdict(list)
         for f in flights:
-            if f["date"][:10] == latest_date:
+            if f["date"] == last_date:
                 by_dest[f["destination"]].append(f)
 
         for dest, dest_entries in by_dest.items():
