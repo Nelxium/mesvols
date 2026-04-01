@@ -88,7 +88,7 @@ def generate_data_js():
             best_url = skyscanner_url
         else:
             best_price = price_g
-            best_source = "Google" if not price_s else "Google"
+            best_source = "Google"
             best_url = google_url
 
         city = r["route"].split("->")[-1].strip() if "->" in r["route"] else dest
