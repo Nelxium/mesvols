@@ -208,7 +208,7 @@ function showEmpty(){document.getElementById('empty').style.display='block';docu
 function st(s){const n=s||0;return'★'.repeat(n)+'☆'.repeat(5-n);}
 function stC(s){return s>=5?'color:var(--gold)':s>=4?'color:var(--teal)':s>=3?'color:var(--sky)':'color:var(--muted)';}
 function stopT(s){if(!s)return'';const t=s.toLowerCase();if(t.includes('direct')||t==='0')return'<span class="tag t-direct">Direct</span>';if(t.includes('1'))return'<span class="tag t-1">1 escale</span>';return'<span class="tag t-2">'+s+'</span>';}
-function bUrl(o,d,dep,ret){const dd=(dep||'').replace(/-/g,'').slice(2),rd=(ret||'').replace(/-/g,'').slice(2);return`https://www.skyscanner.ca/transport/flights/${(o||'yul').toLowerCase()}/${d.toLowerCase()}/${dd}/${rd}/?adultsv2=1&currency=CAD&locale=fr-CA&market=CA`;}
+function bUrl(o,d,dep,ret){return`https://www.skyscanner.ca/transport/flights/day-view?origin=${(o||'YUL').toUpperCase()}&destination=${d.toUpperCase()}&outboundDate=${dep||''}&inboundDate=${ret||''}&cabinclass=economy&adultsv2=1&market=CA&locale=fr-CA&currency=CAD`;}
 
 document.getElementById('csv-input').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=ev=>{const lines=ev.target.result.trim().split('\n'),hdr=lines[0].split(',').map(h=>h.trim().toLowerCase());window.FLIGHT_DATA=[];for(let i=1;i<lines.length;i++){const v=lines[i].split(',').map(s=>s.trim());if(v.length<3)continue;const o={};hdr.forEach((h,j)=>o[h]=v[j]||'');const p=parseFloat((o.price_cad||o.price||'0').replace(/[^0-9.]/g,''));if(!p)continue;FLIGHT_DATA.push({date:o.date,route:o.route,origin:o.origin||'YUL',destination:o.destination||'',price:p,airline:o.airline||'Inconnue',stops:o.escales||o.stops||'',depart:o.depart||'',retour:o.retour||'',booking_url:o.booking_url||'',score:parseInt(o.score)||0});}window.LAST_UPDATE=FLIGHT_DATA.length?FLIGHT_DATA[FLIGHT_DATA.length-1].date:'';render();};rd.readAsText(f);});
 
@@ -238,8 +238,8 @@ function render(){
   // Deals
   const db=document.getElementById('dbanner');
   if(deals.length){db.classList.add('show');
-    document.getElementById('dscroll').innerHTML=deals.map(d=>{const fl=F[d.dest]||'🌍',ci=C[d.dest]||d.dest,url=d.e.booking_url||bUrl(d.e.origin,d.dest,d.e.depart,d.e.retour);
-      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)} <span style="${stC(d.e.score)};font-size:.72rem">${st(d.e.score)}</span>${d.e.best_source?`<span style="font-size:.62rem;color:var(--dim);margin-left:4px">via ${d.e.best_source}</span>`:''}</div><a href="${d.e.booking_url||url}" target="_blank" class="dc-btn">Réserver →</a></div>`;}).join('');
+    document.getElementById('dscroll').innerHTML=deals.map(d=>{const fl=F[d.dest]||'🌍',ci=C[d.dest]||d.dest,url=bUrl(d.e.origin,d.dest,d.e.depart,d.e.retour);
+      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)} <span style="${stC(d.e.score)};font-size:.72rem">${st(d.e.score)}</span>${d.e.best_source?`<span style="font-size:.62rem;color:var(--dim);margin-left:4px">via ${d.e.best_source}</span>`:''}</div><a href="${url}" target="_blank" class="dc-btn">Réserver →</a></div>`;}).join('');
   } else db.classList.remove('show');
 
   // Cards
@@ -275,7 +275,7 @@ function render(){
     if(goodP.length>0){
       const ph=goodP.map(r=>{
         const rd=avg?Math.round(((r.price-avg)/avg)*100):0;
-        const ru=r.booking_url||bUrl(r.origin||'YUL',dest,r.depart,r.retour);
+        const ru=bUrl(r.origin||'YUL',dest,r.depart,r.retour);
         return`<div class="card-period">
           <div class="cp-dates">${r.depart} → ${r.retour}</div>
           <div class="cp-row"><span class="cp-price">${r.price}$</span><span class="cp-avg">${avg}$</span><span class="cp-var cv-down">↓ ${Math.abs(rd)}%</span></div>
@@ -292,8 +292,8 @@ function render(){
         <div style="font-size:.62rem;color:var(--muted);margin-bottom:3px">Évolution du prix ▾</div>
         <div class="card-spark">${spark}</div>
         <div style="font-size:.65rem;color:var(--muted);margin-bottom:10px">${last.price_skyscanner?`<span style="margin-right:8px">Google: <b>${last.price_google}$</b></span><span>Skyscanner: <b>${last.price_skyscanner}$</b></span>`:`Prix via ${last.best_source||'Google Flights'}`}${last.best_source&&last.price_skyscanner?` — <span style="color:var(--teal);font-weight:600">Meilleur: ${last.best_source}</span>`:''}</div>
-        <div style="display:flex;gap:8px"><a href="${last.booking_url||url}" target="_blank" class="card-cta" style="flex:1">${last.best_source==='Skyscanner'?'Skyscanner':'Google Flights'} →</a>
-        <a href="${last.best_source==='Skyscanner'?(last.google_url||url):(last.skyscanner_url||bUrl(last.origin||'YUL',dest,last.depart,last.retour))}" target="_blank" class="card-cta2" style="flex:1">${last.best_source==='Skyscanner'?'Google':'Skyscanner'} →</a></div>`;
+        <div style="display:flex;gap:8px"><a href="${bUrl(last.origin||'YUL',dest,last.depart,last.retour)}" target="_blank" class="card-cta" style="flex:1">Réserver →</a>
+        <a href="${last.google_url||last.booking_url||url}" target="_blank" class="card-cta2" style="flex:1">Google Flights →</a></div>`;
     }
 
     return`<div class="card">

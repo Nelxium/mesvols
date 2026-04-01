@@ -163,7 +163,7 @@ const IMG={
 function st(s){const n=s||0;return'★'.repeat(n)+'☆'.repeat(5-n);}
 function stC(s){return s>=5?'color:var(--gold)':s>=4?'color:var(--teal)':s>=3?'color:var(--sky)':'color:var(--muted)';}
 function stopT(s){if(!s)return'';const t=s.toLowerCase();if(t.includes('direct')||t==='0')return'<span class="tag t-direct">Direct</span>';if(t.includes('1'))return'<span class="tag t-1">1 escale</span>';return'<span class="tag t-2">'+s+'</span>';}
-function bUrl(o,d,dep,ret){const dd=(dep||'').replace(/-/g,'').slice(2),rd=(ret||'').replace(/-/g,'').slice(2);return`https://www.skyscanner.ca/transport/flights/${(o||'yul').toLowerCase()}/${d.toLowerCase()}/${dd}/${rd}/?adultsv2=1&currency=CAD&locale=fr-CA&market=CA`;}
+function bUrl(o,d,dep,ret){return`https://www.skyscanner.ca/transport/flights/day-view?origin=${(o||'YUL').toUpperCase()}&destination=${d.toUpperCase()}&outboundDate=${dep||''}&inboundDate=${ret||''}&cabinclass=economy&adultsv2=1&market=CA&locale=fr-CA&currency=CAD`;}
 
 function render(){
   if(typeof FLIGHT_DATA==='undefined'||!FLIGHT_DATA||!FLIGHT_DATA.length)return;
@@ -189,8 +189,8 @@ function render(){
 
   const db=document.getElementById('dbanner');
   if(deals.length){db.classList.add('show');
-    document.getElementById('dscroll').innerHTML=deals.map(d=>{const fl=F[d.dest]||'🌍',ci=C[d.dest]||d.dest,url=d.e.booking_url||bUrl(d.e.origin,d.dest,d.e.depart,d.e.retour);
-      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)}</div><a href="${d.e.booking_url||url}" target="_blank" class="dc-btn">Réserver →</a></div>`;}).join('');
+    document.getElementById('dscroll').innerHTML=deals.map(d=>{const fl=F[d.dest]||'🌍',ci=C[d.dest]||d.dest,url=bUrl(d.e.origin,d.dest,d.e.depart,d.e.retour);
+      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)}</div><a href="${url}" target="_blank" class="dc-btn">Réserver →</a></div>`;}).join('');
   } else db.classList.remove('show');
 
   function sortRoutes(mode){
@@ -225,7 +225,7 @@ function render(){
     if(goodP.length>0){
       const ph=goodP.map(r=>{
         const rd=avg?Math.round(((r.price-avg)/avg)*100):0;
-        const ru=r.booking_url||bUrl(r.origin||'YUL',dest,r.depart,r.retour);
+        const ru=bUrl(r.origin||'YUL',dest,r.depart,r.retour);
         return`<div class="card-period">
           <div class="cp-dates">${r.depart} → ${r.retour}</div>
           <div class="cp-row"><span class="cp-price">${r.price}$</span><span class="cp-avg">${avg}$</span><span class="cp-var cv-down">↓ ${Math.abs(rd)}%</span></div>
@@ -239,8 +239,8 @@ function render(){
       bodyContent=`<div class="card-prices"><span class="cp-now">${lp}$</span><span class="cp-avg">${avg}$</span><span class="cp-var ${vc}">${arrow} ${Math.abs(diff)}%</span></div>
         <div class="card-tags">${stopT(last.stops)}<span class="tag t-airline">${last.airline||''}</span>${last.depart?`<span class="tag t-date">${last.depart}</span>`:''}</div>
         <div class="card-spark">${spark}</div>
-        <div class="card-btns"><a href="${last.booking_url||url}" target="_blank" class="card-cta">Réserver →</a>
-        <a href="${last.skyscanner_url||bUrl(last.origin||'YUL',dest,last.depart,last.retour)}" target="_blank" class="card-cta2">Skyscanner</a></div>`;
+        <div class="card-btns"><a href="${bUrl(last.origin||'YUL',dest,last.depart,last.retour)}" target="_blank" class="card-cta">Réserver →</a>
+        <a href="${last.google_url||last.booking_url||url}" target="_blank" class="card-cta2">Google Flights</a></div>`;
     }
 
     return`<div class="card">
