@@ -17,6 +17,9 @@ DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1488732081646342256/owQn
 # Seuil de rabais pour declencher une alerte (0.40 = 40 %)
 DEAL_THRESHOLD = 0.40
 
+# URL de base du serveur (pour les liens /r/<deal_id> dans data.js)
+BASE_URL = "http://localhost:8080"
+
 # Routes a surveiller (depart, arrivee, nom affiche)
 ROUTES = [
     ("YUL", "CDG", "Montreal -> Paris"),
