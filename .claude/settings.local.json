@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(schtasks:*)",
+      "Bash(python main.py)",
+      "Bash(python -c \"from analyzer import parse_stops, compute_score; print\\(parse_stops\\(''Direct''\\), parse_stops\\(''1 escale\\(s\\)''\\), parse_stops\\(''2 escale\\(s\\)''\\), parse_stops\\(None\\)\\); print\\(compute_score\\(500, 1000, 0\\), compute_score\\(800, 1000, 0\\), compute_score\\(500, 1000, 1\\), compute_score\\(800, 1000, 1\\), compute_score\\(800, 1000, 2\\)\\)\")",
+      "Bash(python -c \"from analyzer import compute_score; print\\(''950/1000 direct:'', compute_score\\(950, 1000, 0\\)\\); print\\(''1000/1000 direct:'', compute_score\\(1000, 1000, 0\\)\\); print\\(''950/1000 1esc:'', compute_score\\(950, 1000, 1\\)\\); print\\(''1000/1000 1esc:'', compute_score\\(1000, 1000, 1\\)\\)\")",
+      "Bash(python -c \"from main import generate_data_js; generate_data_js\\(\\)\")",
+      "Bash(python -c \":*)",
+      "Bash(python -c \"from scraper import HORIZONS; print\\(''Horizons:'', HORIZONS\\)\")",
+      "Bash(grep -E \"\\\\.py$|\\\\.js$|\\\\.csv$|\\\\.html$|\\\\.txt$|\\\\.bat$\")",
+      "Bash(python:*)",
+      "Bash(cmd.exe //c \"schtasks /query /tn MesVols_1h /v /fo LIST\" 2>&1)",
+      "Bash(cmd.exe //c \"schtasks /query /fo LIST\")",
+      "Bash(cmd.exe //c \"schtasks /query /tn MesVols_30min /v /fo LIST\" 2>&1)",
+      "Bash(cmd.exe //c \"schtasks /delete /tn MesVols_30min /f\" 2>&1)",
+      "Bash(cmd.exe //c \"schtasks /create /tn MesVols_30min /tr \\\\\"\\\\\\\\\\\\\"C:\\\\Users\\\\Amaz\\\\AppData\\\\Local\\\\Python\\\\pythoncore-3.14-64\\\\python.exe\\\\\\\\\\\\\" \\\\\\\\\\\\\"C:\\\\MesVols\\\\main.py\\\\\\\\\\\\\"\\\\\" /sc minute /mo 30 /f\" 2>&1)",
+      "Bash(cmd.exe //c 'schtasks /create /tn MesVols_30min /tr \"\\\\\"C:\\\\Users\\\\Amaz\\\\AppData\\\\Local\\\\Python\\\\pythoncore-3.14-64\\\\python.exe\\\\\" \\\\\"C:\\\\MesVols\\\\main.py\\\\\"\" /sc minute /mo 30 /f' 2>&1)",
+      "Bash(cmd.exe //c \"schtasks /query /tn MesVols_30min /fo LIST\" 2>&1)",
+      "Bash(ls C:/MesVols/debug_*)",
+      "Bash(curl:*)",
+      "Bash(tailscale ip:*)",
+      "Bash(netstat -ano)",
+      "Bash(cmd.exe //c \"start /b python C:\\\\MesVols\\\\server.py\" 2>&1)"
+    ]
+  }
+}
