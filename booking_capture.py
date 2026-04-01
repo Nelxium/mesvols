@@ -6,6 +6,7 @@ Flow : resultats aller -> selection vol aller -> resultats retour ->
        selection vol retour -> ecran offres partenaires -> clic offre -> capture.
 """
 
+import hashlib
 import json
 import os
 import re
@@ -22,8 +23,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 from scraper import build_flights_url
 
 DEALS_PATH = os.path.join(os.path.dirname(__file__), "deals.json")
-MAX_CAPTURES_PER_CYCLE = 5
-FRESHNESS_MINUTES = 30
+MAX_CAPTURES_PER_CYCLE = 3
+FRESHNESS_MINUTES = 30   # Pour servir les liens via /r/ (server.py)
+RECAPTURE_MINUTES = 75   # Pour decider de relancer une capture
 
 GOOGLE_DOMAINS = {
     "google.com", "google.ca", "google.fr", "googleapis.com",
@@ -67,6 +69,52 @@ def is_fresh(deal, minutes=FRESHNESS_MINUTES):
         return (datetime.now() - ts).total_seconds() < minutes * 60
     except ValueError:
         return False
+
+
+# ── Priorite / hash / backoff ────────────────────────────────────────────
+
+def compute_offer_hash(deal):
+    """Hash stable des champs cles du best_offer (inclut stops)."""
+    key = ":".join(str(x) for x in [
+        deal.get("origin", ""),
+        deal.get("destination", ""),
+        deal.get("depart", ""),
+        deal.get("retour", ""),
+        deal.get("price", ""),
+        deal.get("airline", ""),
+        deal.get("num_stops", deal.get("stops", "")),
+    ])
+    return hashlib.md5(key.encode()).hexdigest()[:8]
+
+
+def _age_minutes(timestamp_str):
+    """Age en minutes d'un timestamp YYYY-MM-DD HH:MM:SS. None si invalide."""
+    if not timestamp_str:
+        return None
+    try:
+        ts = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
+        return (datetime.now() - ts).total_seconds() / 60
+    except ValueError:
+        return None
+
+
+def _backoff_minutes(fail_count):
+    """Backoff exponentiel : 10, 20, 40, 80, max 120 min."""
+    if fail_count <= 0:
+        return 0
+    return min(10 * (2 ** (fail_count - 1)), 120)
+
+
+def _make_snapshot(deal):
+    """Snapshot lisible du best_offer pour debug dans deals.json."""
+    return {
+        "price": deal.get("price"),
+        "stops": deal.get("num_stops", deal.get("stops", "")),
+        "depart": deal.get("depart", ""),
+        "retour": deal.get("retour", ""),
+        "airline": deal.get("airline", ""),
+        "airline_code": deal.get("_airline_code", ""),
+    }
 
 
 # ── Selenium helpers ─────────────────────────────────────────────────────
@@ -303,20 +351,96 @@ def capture_booking_url(origin, dest, depart_str, retour_str):
     return result
 
 
-# ── Resolveur de deals ───────────────────────────────────────────────────
+# ── Resolveur de deals (capture incrementale) ────────────────────────────
 
 def resolve_deals(deals_list, get_airline_code_fn=None):
     """
-    Pour une liste de deals (aubaines 30%+), capture les URLs de reservation.
-    Max MAX_CAPTURES_PER_CYCLE par cycle. Ne recapture pas les deals frais.
-    Retourne le dict deals mis a jour.
+    Capture incrementale des URLs de reservation pour les aubaines >= 30%.
+
+    Systeme de priorite :
+      P100 — jamais capture (deal_id absent de deals.json)
+      P90  — offer_hash a change (prix/dates/compagnie/stops differents)
+      P50  — capture expiree (> RECAPTURE_MINUTES) et derniere capture reussie
+      P30  — derniere capture echouee et backoff ecoule
+      Skip — capture fraiche + hash identique, ou en periode de backoff
+
+    Max MAX_CAPTURES_PER_CYCLE par cycle.
+    Arret anticipe si 3 echecs consecutifs dans le meme cycle.
     """
     stored = load_deals()
-    captured = 0
+
+    # Phase 1 : scorer chaque deal
+    scored = []  # [(priority, deal_id, deal, offer_hash, airline_code)]
 
     for deal in deals_list:
-        if captured >= MAX_CAPTURES_PER_CYCLE:
-            print(f"  [Capture] Limite de {MAX_CAPTURES_PER_CYCLE} captures atteinte")
+        airline = deal.get("airline", "")
+        airline_code = get_airline_code_fn(airline) if get_airline_code_fn else ""
+        deal["_airline_code"] = airline_code  # pour _make_snapshot
+
+        origin = deal.get("origin", "")
+        dest = deal.get("destination", "")
+        depart = deal.get("depart", "")
+        retour = deal.get("retour", "")
+
+        deal_id = make_deal_id(origin, dest, depart, retour, airline_code, airline)
+        offer_hash = compute_offer_hash(deal)
+        existing = stored.get(deal_id)
+
+        # P100 : jamais capture
+        if not existing:
+            scored.append((100, deal_id, deal, offer_hash, airline_code))
+            continue
+
+        old_hash = existing.get("offer_hash", "")
+        was_success = existing.get("success", False)
+        captured_at = existing.get("captured_at", "")
+        fail_count = existing.get("fail_count", 0)
+        last_fail_at = existing.get("last_fail_at", "")
+        age = _age_minutes(captured_at)
+
+        # P90 : hash a change
+        if offer_hash != old_hash:
+            scored.append((90, deal_id, deal, offer_hash, airline_code))
+            continue
+
+        # Hash identique — verifier fraicheur pour recapture (75 min)
+        if was_success and age is not None and age < RECAPTURE_MINUTES:
+            # Frais + meme offre → skip
+            print(f"  [Capture] {deal_id}: frais ({age:.0f} min), skip")
+            continue
+
+        # P30 : echec precedent — verifier backoff
+        if fail_count > 0:
+            backoff = _backoff_minutes(fail_count)
+            fail_age = _age_minutes(last_fail_at)
+            if fail_age is not None and fail_age < backoff:
+                print(f"  [Capture] {deal_id}: backoff ({backoff:.0f} min, reste {backoff - fail_age:.0f}), skip")
+                continue
+            scored.append((30, deal_id, deal, offer_hash, airline_code))
+            continue
+
+        # P50 : capture expiree (> 75 min), derniere reussie
+        if was_success:
+            scored.append((50, deal_id, deal, offer_hash, airline_code))
+            continue
+
+        # Cas residuel (pas de capture, pas d'echec) → P100
+        scored.append((100, deal_id, deal, offer_hash, airline_code))
+
+    # Phase 2 : trier par priorite et capturer
+    scored.sort(key=lambda x: -x[0])
+    to_capture = scored[:MAX_CAPTURES_PER_CYCLE]
+
+    if not to_capture:
+        print(f"  [Capture] Aucune capture necessaire")
+        return stored
+
+    print(f"  [Capture] {len(to_capture)} capture(s) planifiee(s) sur {len(scored)} eligibles")
+    consecutive_fails = 0
+
+    for priority, deal_id, deal, offer_hash, airline_code in to_capture:
+        if consecutive_fails >= 3:
+            print(f"  [Capture] 3 echecs consecutifs — arret du cycle (Google bloque ?)")
             break
 
         origin = deal.get("origin", "")
@@ -324,36 +448,51 @@ def resolve_deals(deals_list, get_airline_code_fn=None):
         depart = deal.get("depart", "")
         retour = deal.get("retour", "")
         airline = deal.get("airline", "")
-        airline_code = get_airline_code_fn(airline) if get_airline_code_fn else ""
 
-        deal_id = make_deal_id(origin, dest, depart, retour, airline_code, airline)
-
-        # Skip si lien frais existant
-        if deal_id in stored and stored[deal_id].get("success") and is_fresh(stored[deal_id]):
-            print(f"  [Capture] {deal_id}: lien frais, skip")
-            continue
-
-        print(f"  [Capture] {deal_id}: demarrage...")
+        print(f"  [Capture] {deal_id} (P{priority}): demarrage...")
         cap = capture_booking_url(origin, dest, depart, retour)
 
-        stored[deal_id] = {
-            "deal_id": deal_id,
-            "origin": origin,
-            "destination": dest,
-            "depart": depart,
-            "retour": retour,
-            "airline": airline,
-            "airline_code": airline_code,
-            "partner_clicked": cap["partner_clicked"],
-            "final_url": cap["final_url"],
-            "final_domain": cap["final_domain"],
-            "captured_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "success": cap["success"],
-        }
-        captured += 1
+        existing = stored.get(deal_id, {})
 
-        tag = "OK" if cap["success"] else "ECHEC"
-        print(f"  [Capture] {deal_id}: {tag} -> {cap['final_domain'] or cap['error']}")
+        if cap["success"]:
+            consecutive_fails = 0
+            stored[deal_id] = {
+                "deal_id": deal_id,
+                "offer_hash": offer_hash,
+                "snapshot": _make_snapshot(deal),
+                "origin": origin,
+                "destination": dest,
+                "depart": depart,
+                "retour": retour,
+                "airline": airline,
+                "airline_code": airline_code,
+                "partner_clicked": cap["partner_clicked"],
+                "final_url": cap["final_url"],
+                "final_domain": cap["final_domain"],
+                "captured_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "success": True,
+                "fail_count": 0,
+                "last_fail_at": "",
+            }
+            print(f"  [Capture] {deal_id}: OK -> {cap['final_domain']}")
+        else:
+            consecutive_fails += 1
+            stored[deal_id] = {
+                **existing,
+                "deal_id": deal_id,
+                "offer_hash": offer_hash,
+                "snapshot": _make_snapshot(deal),
+                "origin": origin,
+                "destination": dest,
+                "depart": depart,
+                "retour": retour,
+                "airline": airline,
+                "airline_code": airline_code,
+                "success": False,
+                "fail_count": existing.get("fail_count", 0) + 1,
+                "last_fail_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            print(f"  [Capture] {deal_id}: ECHEC -> {cap['error']}")
 
     save_deals(stored)
     return stored

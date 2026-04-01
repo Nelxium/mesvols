@@ -82,24 +82,16 @@ def main():
         ok = url == "https://www.airtransat.com/test"
         results.append(("Deal frais -> URL capturee", ok, url))
 
-        # Cas 2 : deal expire -> fallback Skyscanner
+        # Cas 2 : deal expire -> fallback Skyscanner (format legacy path)
         url = resolve("YUL-CUN-20260701-20260708-WS")
-        ok = ("skyscanner.ca" in url
-              and "origin=YUL" in url
-              and "destination=CUN" in url
-              and "outboundDate=2026-07-01" in url
-              and "inboundDate=2026-07-08" in url
-              and "airlines=WS" in url)
+        ok = ("skyscanner.ca/transport/flights/yul/cun/260701/260708/" in url
+              and "currency=CAD" in url)
         results.append(("Deal expire -> fallback Skyscanner", ok, url))
 
         # Cas 3 : deal_id inconnu -> fallback Skyscanner parse depuis l'ID
         url = resolve("YUL-PUJ-20260815-20260822-DL")
-        ok = ("skyscanner.ca" in url
-              and "origin=YUL" in url
-              and "destination=PUJ" in url
-              and "outboundDate=2026-08-15" in url
-              and "inboundDate=2026-08-22" in url
-              and "airlines=DL" in url)
+        ok = ("skyscanner.ca/transport/flights/yul/puj/260815/260822/" in url
+              and "currency=CAD" in url)
         results.append(("Deal inconnu -> fallback Skyscanner parse", ok, url))
 
     except Exception as e:
