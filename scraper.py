@@ -279,124 +279,6 @@ def parse_flight_results(driver):
 
 
 # ---------------------------------------------------------------------------
-# Skyscanner : verification du prix reel
-# ---------------------------------------------------------------------------
-
-def build_skyscanner_url(origin, dest, depart_str, retour_str):
-    """Construit l'URL Skyscanner a partir des codes IATA et des dates YYYY-MM-DD."""
-    sky_dep = depart_str.replace("-", "")[2:]   # AAMMJJ
-    sky_ret = retour_str.replace("-", "")[2:]
-    return (f"https://www.skyscanner.ca/transport/flights/"
-            f"{origin.lower()}/{dest.lower()}/{sky_dep}/{sky_ret}/"
-            f"?adultsv2=1&currency=CAD&locale=fr-CA&market=CA")
-
-
-def scrape_skyscanner_price(driver, origin, dest, depart_str, retour_str):
-    """
-    Ouvre la page Skyscanner et extrait le prix le plus bas affiche.
-    Retourne le prix (int) ou None si introuvable.
-    """
-    url = build_skyscanner_url(origin, dest, depart_str, retour_str)
-    print(f"    [Skyscanner] {origin}->{dest} {depart_str} ...")
-
-    try:
-        driver.get(url)
-        time.sleep(12)  # Skyscanner charge lentement
-
-        # Fermer popups / cookie banners
-        for sel in ["#acceptCookieButton", "[data-testid='acceptCookieButton']",
-                     "button[title='OK']", ".BpkCloseButton_bpk-close-button"]:
-            btns = driver.find_elements(By.CSS_SELECTOR, sel)
-            for b in btns:
-                try:
-                    b.click()
-                    time.sleep(1)
-                except Exception:
-                    pass
-
-        price = None
-
-        # Strategie 1 : selecteurs Skyscanner connus
-        selectors = [
-            "[class*='Price'] span", "[class*='price'] span",
-            "[data-testid*='price']", "[class*='FqsPrice']",
-            "[class*='totalPrice']", ".BpkText_bpk-text--lg",
-            "[class*='ResultPrice']", "[class*='fqs-price']",
-        ]
-        for sel in selectors:
-            els = driver.find_elements(By.CSS_SELECTOR, sel)
-            for el in els:
-                p = extract_price(el.text)
-                if p and 50 < p < 50000:
-                    if price is None or p < price:
-                        price = p
-            if price:
-                break
-
-        # Strategie 2 : regex sur le texte visible de la page
-        if not price:
-            body_text = driver.find_element(By.TAG_NAME, "body").text
-            for m in re.finditer(r"(\d[\d\s]*)\s*\$", body_text):
-                p = int(m.group(1).replace(" ", ""))
-                if 50 < p < 50000 and (price is None or p < price):
-                    price = p
-
-        if price:
-            print(f"    [Skyscanner] -> {price} $CA")
-        else:
-            print(f"    [Skyscanner] -> Aucun prix trouve")
-            driver.save_screenshot(
-                os.path.join(os.path.dirname(__file__),
-                             f"debug_sky_{origin}_{dest}.png"))
-        return price
-
-    except Exception as e:
-        print(f"    [Skyscanner] -> ERREUR: {e}")
-        return None
-
-
-def _is_interesting(price, route, route_avgs, stops_text):
-    """
-    Un vol est interessant s'il merite une verification Skyscanner :
-    - prix 15%+ sous la moyenne historique, OU
-    - score >= 4 (vol direct, ou 1 escale + prix bas).
-    """
-    avg = route_avgs.get(route)
-    s = (stops_text or "").lower()
-    num_stops = 0 if ("direct" in s or "sans escale" in s) else (
-        int(s.split()[0]) if s and s[0].isdigit() else 1)
-
-    if avg and avg > 0:
-        pct_below = (avg - price) / avg
-        if pct_below >= 0.15:
-            return True
-        # score >= 4 : direct, ou 1 escale + 20% sous moyenne
-        if num_stops == 0:
-            return True
-        if num_stops == 1 and pct_below >= 0.20:
-            return True
-    else:
-        # Pas d'historique : verifier les vols directs (score 4 garanti)
-        if num_stops == 0:
-            return True
-    return False
-
-
-def _verify_skyscanner(driver, results, route_avgs):
-    """Verifie sur Skyscanner les deals interessants uniquement."""
-    count = 0
-    for r in results:
-        if _is_interesting(r["price_google"], r["route"], route_avgs, r["escales"]):
-            sky_price = scrape_skyscanner_price(
-                driver, r["origin"], r["destination"], r["depart"], r["retour"])
-            r["price_skyscanner"] = sky_price if sky_price else ""
-            count += 1
-            time.sleep(2)
-        # else: price_skyscanner reste "" (deja defini dans scrape_route)
-    print(f"\n{count} vol(s) verifie(s) sur Skyscanner")
-
-
-# ---------------------------------------------------------------------------
 # Scraping d'une route
 # ---------------------------------------------------------------------------
 
@@ -486,30 +368,8 @@ def save_to_csv(results):
 # Point d'entree
 # ---------------------------------------------------------------------------
 
-def _load_route_averages():
-    """Charge les moyennes par route depuis le CSV historique (pour le filtre Skyscanner)."""
-    from collections import defaultdict
-    avgs = {}
-    if not os.path.isfile(CSV_FILE):
-        return avgs
-    prices = defaultdict(list)
-    with open(CSV_FILE, "r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            route = row.get("route", "")
-            p = row.get("price_google") or row.get("price_cad", "")
-            try:
-                prices[route].append(int(p))
-            except (ValueError, TypeError):
-                pass
-    for route, plist in prices.items():
-        if plist:
-            avgs[route] = sum(plist) / len(plist)
-    return avgs
-
-
 def run_scraper():
-    """Lance le scraping de toutes les routes + verification Skyscanner des bons deals."""
+    """Lance le scraping de toutes les routes."""
     # Migration CSV si ancien format
     _migrate_csv()
 
@@ -534,23 +394,6 @@ def run_scraper():
 
     finally:
         driver.quit()
-
-    # TODO: Verification Skyscanner desactivee — CAPTCHA "press and hold" bloque
-    # tous les prix. Reactiver quand une solution sera en place (API, CAPTCHA solver, etc.)
-    # if all_results:
-    #     route_avgs = _load_route_averages()
-    #     interesting = [r for r in all_results
-    #                    if _is_interesting(r["price_google"], r["route"],
-    #                                       route_avgs, r["escales"])]
-    #     if interesting:
-    #         print(f"\n{'=' * 60}")
-    #         print(f"Verification Skyscanner — {len(interesting)} deal(s) interessant(s)")
-    #         print("=" * 60)
-    #         sky_driver = get_driver(stealth=True)
-    #         try:
-    #             _verify_skyscanner(sky_driver, all_results, route_avgs)
-    #         finally:
-    #             sky_driver.quit()
 
     if all_results:
         save_to_csv(all_results)
