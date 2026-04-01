@@ -2,11 +2,11 @@
 Envoi d'alertes (email + Discord) quand une aubaine est detectee.
 """
 
+import json
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
-import requests
+from urllib.request import Request, urlopen
 
 from config import GMAIL_ADDRESS, GMAIL_APP_PASSWORD, ALERT_RECIPIENTS, DISCORD_WEBHOOK_URL
 
