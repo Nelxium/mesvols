@@ -12,6 +12,7 @@ from scraper import run_scraper
 from analyzer import find_deals, parse_stops, compute_score
 from notifier import send_deal_alert
 from links import build_skyscanner_url
+from booking_capture import make_deal_id, load_deals, resolve_deals
 
 CSV_PATH = os.path.join(os.path.dirname(__file__), "prix_vols.csv")
 DATA_JS_PATH = os.path.join(os.path.dirname(__file__), "data.js")
@@ -120,6 +121,9 @@ def generate_data_js():
     route_avg = {r: sum(p) / len(p) for r, p in route_prices.items()}
     route_min = {r: min(p) for r, p in route_prices.items()}
 
+    # Charger les deals captures pour ajouter deal_id / reserve_url
+    captured_deals = load_deals()
+
     flights = []
     for r in raw_rows:
         origin, dest = r["origin"], r["dest"]
@@ -156,6 +160,11 @@ def generate_data_js():
         score = compute_score(best_price, route_avg.get(r["route"], 0),
                               num_stops, route_min.get(r["route"]))
 
+        # deal_id + reserve_url si capture disponible
+        deal_id = make_deal_id(origin, dest, depart, retour, airline_code, r["airline"])
+        cap = captured_deals.get(deal_id)
+        reserve_url = f"/r/{deal_id}" if cap and cap.get("success") else ""
+
         entry = {
             "date": r["date"],
             "route": r["route"],
@@ -174,6 +183,8 @@ def generate_data_js():
             "skyscanner_url": skyscanner_url,
             "google_url": google_url,
             "airline_url": airline_url,
+            "deal_id": deal_id,
+            "reserve_url": reserve_url,
         }
         flights.append(entry)
 
@@ -200,6 +211,8 @@ def generate_data_js():
                 "score": best["score"],
                 "skyscanner_url": best["skyscanner_url"],
                 "google_url": best["google_url"],
+                "deal_id": best.get("deal_id", ""),
+                "reserve_url": best.get("reserve_url", ""),
             }
 
     entries = ",\n  ".join(json.dumps(f, ensure_ascii=False) for f in flights)
@@ -224,19 +237,24 @@ def main():
         print("\nAucun resultat trouve. Reessaie plus tard.")
         return
 
-    # 2. Regenerer data.js
-    generate_data_js()
-
-    # 3. Analyser et comparer avec l'historique
+    # 2. Analyser et comparer avec l'historique
     print("\n" + "=" * 50)
     print("Analyse des prix")
     print("=" * 50)
     deals = find_deals(results)
 
-    # 3. Envoyer une alerte si aubaine(s) avec rabais >= 30%
+    # 3. Capturer les URLs de reservation pour les aubaines >= 30%
+    notifiable = [d for d in deals if d.get("discount_pct", 0) >= 30] if deals else []
+    if notifiable:
+        print(f"\n{len(notifiable)} aubaine(s) >= 30%, capture des URLs...")
+        resolve_deals(notifiable, get_airline_code)
+
+    # 4. Regenerer data.js (inclut deal_id + reserve_url si disponibles)
+    generate_data_js()
+
+    # 5. Envoyer une alerte si aubaine(s)
     if deals:
         print(f"\n{len(deals)} AUBAINE(S) DETECTEE(S) !")
-        notifiable = [d for d in deals if d.get("discount_pct", 0) >= 30]
         skipped = len(deals) - len(notifiable)
         if notifiable:
             send_deal_alert(notifiable)

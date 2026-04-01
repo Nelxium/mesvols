@@ -240,7 +240,7 @@ function render(){
   const db=document.getElementById('dbanner');
   if(deals.length){db.classList.add('show');
     document.getElementById('dscroll').innerHTML=deals.map(d=>{const fl=F[d.dest]||'🌍',ci=C[d.dest]||d.dest;
-      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)} <span style="${stC(d.e.score)};font-size:.72rem">${st(d.e.score)}</span>${d.e.best_source?`<span style="font-size:.62rem;color:var(--dim);margin-left:4px">via ${d.e.best_source}</span>`:''}</div><a href="${d.e.skyscanner_url||''}" target="_blank" class="dc-btn">Réserver →</a></div>`;}).join('');
+      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)} <span style="${stC(d.e.score)};font-size:.72rem">${st(d.e.score)}</span>${d.e.best_source?`<span style="font-size:.62rem;color:var(--dim);margin-left:4px">via ${d.e.best_source}</span>`:''}</div><a href="${d.e.reserve_url||d.e.skyscanner_url||''}" target="_blank" class="dc-btn">Réserver →</a></div>`;}).join('');
   } else db.classList.remove('show');
 
   // Cards
@@ -254,7 +254,7 @@ function render(){
     const e=bd[dest],p=e.map(r=>r.price),avg=Math.round(p.reduce((a,b)=>a+b,0)/p.length),best=bof(dest),lp=best.price,mx=Math.max(...p);
     const diff=avg?Math.round(((lp-avg)/avg)*100):0;
     const fl=F[dest]||'🌍',ci=C[dest]||dest,img=IMG[dest]||IMG.CDG;
-    const skyUrl=best.skyscanner_url||'',gUrl=best.google_url||best.booking_url||'';
+    const skyUrl=best.reserve_url||best.skyscanner_url||'',gUrl=best.google_url||best.booking_url||'';
     const vc=diff<=-15?'cv-down':diff>=5?'cv-up':'cv-flat';
     const arrow=diff<=0?'↓':'↑';
 
@@ -276,7 +276,7 @@ function render(){
     if(goodP.length>0){
       const ph=goodP.map(r=>{
         const rd=avg?Math.round(((r.price-avg)/avg)*100):0;
-        const ru=r.skyscanner_url||'';
+        const ru=r.reserve_url||r.skyscanner_url||'';
         return`<div class="card-period">
           <div class="cp-dates">${r.depart} → ${r.retour}</div>
           <div class="cp-row"><span class="cp-price">${r.price}$</span><span class="cp-avg">${avg}$</span><span class="cp-var cv-down">↓ ${Math.abs(rd)}%</span></div>
