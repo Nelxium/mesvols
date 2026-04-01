@@ -1,0 +1,122 @@
+[
+  {
+    "attempt": 1,
+    "timestamp": "2026-04-01 17:49:45",
+    "airline": "Air TransatPorter Airlines",
+    "depart": "2026-05-31",
+    "retour": "2026-06-07",
+    "click_timestamp": "2026-04-01 17:49:59.010054",
+    "urls_observed": [
+      {
+        "url": "https://www.google.com/_/FlightsFrontendUi/data/batchexecute?rpcids=H028ib&source-path=%2Ftravel%2Fflights%2Fsearch&f.sid=-1346649267098564344&bl=boq_travel-frontend-flights-ui_20260330.02_p2&hl=fr&gl=CA&soc-app=162&soc-platform=1&soc-device=1&_reqid=364189&rt=c",
+        "type": "request",
+        "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJV2tsV1VrZHdNalJ4VG1kQlFXRlhTMUZDUnkwdExTMHRMUzB0ZG5kaVpXOHpNa0ZCUVVGQlIyNU9hM1ozUnpGUlgwVkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
+        "type": "document",
+        "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      }
+    ],
+    "final_url": "",
+    "final_domain": "",
+    "success": false,
+    "error": "Aucune URL exploitable capturee hors de Google",
+    "notes": [
+      "Driver demarre, ouverture de Google Flights",
+      "16 resultats de vol trouves",
+      "Compagnie detectee: Air TransatPorter Airlines",
+      "Bouton 'Selectionner' non trouve, clic sur la ligne de vol",
+      "Bouton trouve: ''",
+      "Clic effectue",
+      "URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJV2tsV1VrZHdNalJ4VG1kQlFXRlhTMUZDUnkwdExTMHRMUzB0ZG5kaVpXOHpNa0ZCUVVGQlIyNU9hM1ozUnpGUlgwVkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
+      "URLs capturees: 2 total, 0 non-Google, 0 booking",
+      "Seules des URLs Google ont ete observees",
+      "Screenshot final: C:\\MesVols\\debug_booking_capture\\attempt_1_final.png"
+    ]
+  },
+  {
+    "attempt": 2,
+    "timestamp": "2026-04-01 17:50:09",
+    "airline": "Air TransatPorter Airlines",
+    "depart": "2026-05-31",
+    "retour": "2026-06-07",
+    "click_timestamp": "2026-04-01 17:50:22.450869",
+    "urls_observed": [
+      {
+        "url": "https://www.google.com/_/FlightsFrontendUi/data/batchexecute?rpcids=H028ib&source-path=%2Ftravel%2Fflights%2Fsearch&f.sid=-7828999769861835505&bl=boq_travel-frontend-flights-ui_20260330.02_p2&hl=fr&gl=CA&soc-app=162&soc-platform=1&soc-device=1&_reqid=364212&rt=c",
+        "type": "request",
+        "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJVGxabU4wSlpNRjl5YlRCQlFWbHdNVUZDUnkwdExTMHRMUzB0TFhsc2EyZ3hNMEZCUVVGQlIyNU9hM2hOVGxsTE0wZEJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
+        "type": "document",
+        "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      }
+    ],
+    "final_url": "",
+    "final_domain": "",
+    "success": false,
+    "error": "Aucune URL exploitable capturee hors de Google",
+    "notes": [
+      "Driver demarre, ouverture de Google Flights",
+      "16 resultats de vol trouves",
+      "Compagnie detectee: Air TransatPorter Airlines",
+      "Bouton 'Selectionner' non trouve, clic sur la ligne de vol",
+      "Bouton trouve: ''",
+      "Clic effectue",
+      "URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJVGxabU4wSlpNRjl5YlRCQlFWbHdNVUZDUnkwdExTMHRMUzB0TFhsc2EyZ3hNMEZCUVVGQlIyNU9hM2hOVGxsTE0wZEJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
+      "URLs capturees: 2 total, 0 non-Google, 0 booking",
+      "Seules des URLs Google ont ete observees",
+      "Screenshot final: C:\\MesVols\\debug_booking_capture\\attempt_2_final.png"
+    ]
+  },
+  {
+    "attempt": 3,
+    "timestamp": "2026-04-01 17:50:32",
+    "airline": "Air TransatPorter Airlines",
+    "depart": "2026-05-31",
+    "retour": "2026-06-07",
+    "click_timestamp": "2026-04-01 17:50:46.271668",
+    "urls_observed": [
+      {
+        "url": "https://www.google.com/_/FlightsFrontendUi/data/batchexecute?rpcids=H028ib&source-path=%2Ftravel%2Fflights%2Fsearch&f.sid=7794926245542584160&bl=boq_travel-frontend-flights-ui_20260330.02_p2&hl=fr&gl=CA&soc-app=162&soc-platform=1&soc-device=1&_reqid=364236&rt=c",
+        "type": "request",
+        "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      },
+      {
+        "url": "https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJUTIxcmVVRnVVbk50T0hOQlFVbG9kV2RDUnkwdExTMHRMUzB0TFMxMmRHb3hOMEZCUVVGQlIyNU9hM2x6UzFONWJWRkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
+        "type": "document",
+        "domain": "www.google.com",
+        "is_google": true,
+        "is_booking": false
+      }
+    ],
+    "final_url": "",
+    "final_domain": "",
+    "success": false,
+    "error": "Aucune URL exploitable capturee hors de Google",
+    "notes": [
+      "Driver demarre, ouverture de Google Flights",
+      "16 resultats de vol trouves",
+      "Compagnie detectee: Air TransatPorter Airlines",
+      "Bouton 'Selectionner' non trouve, clic sur la ligne de vol",
+      "Bouton trouve: ''",
+      "Clic effectue",
+      "URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJUTIxcmVVRnVVbk50T0hOQlFVbG9kV2RDUnkwdExTMHRMUzB0TFMxMmRHb3hOMEZCUVVGQlIyNU9hM2x6UzFONWJWRkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD",
+      "URLs capturees: 2 total, 0 non-Google, 0 booking",
+      "Seules des URLs Google ont ete observees",
+      "Screenshot final: C:\\MesVols\\debug_booking_capture\\attempt_3_final.png"
+    ]
+  }
+]

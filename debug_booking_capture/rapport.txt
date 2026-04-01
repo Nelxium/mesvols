@@ -1,0 +1,76 @@
+======================================================================
+RAPPORT DE CAPTURE — URLs de reservation Google Flights
+Date: 2026-04-01 17:50:56
+Route: YUL -> CDG
+Tentatives: 3, Succes: 0
+======================================================================
+
+--- Tentative 1 ---
+Timestamp:    2026-04-01 17:49:45
+Compagnie:    Air TransatPorter Airlines
+Dates:        2026-05-31 -> 2026-06-07
+Clic a:       2026-04-01 17:49:59.010054
+Statut:       ECHEC
+Erreur:       Aucune URL exploitable capturee hors de Google
+URLs externes: aucune
+Total URLs capturees: 2
+Notes:
+  Driver demarre, ouverture de Google Flights
+  16 resultats de vol trouves
+  Compagnie detectee: Air TransatPorter Airlines
+  Bouton 'Selectionner' non trouve, clic sur la ligne de vol
+  Bouton trouve: ''
+  Clic effectue
+  URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJV2tsV1VrZHdNalJ4VG1kQlFXRlhTMUZDUnkwdExTMHRMUzB0ZG5kaVpXOHpNa0ZCUVVGQlIyNU9hM1ozUnpGUlgwVkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD
+  URLs capturees: 2 total, 0 non-Google, 0 booking
+  Seules des URLs Google ont ete observees
+  Screenshot final: C:\MesVols\debug_booking_capture\attempt_1_final.png
+
+--- Tentative 2 ---
+Timestamp:    2026-04-01 17:50:09
+Compagnie:    Air TransatPorter Airlines
+Dates:        2026-05-31 -> 2026-06-07
+Clic a:       2026-04-01 17:50:22.450869
+Statut:       ECHEC
+Erreur:       Aucune URL exploitable capturee hors de Google
+URLs externes: aucune
+Total URLs capturees: 2
+Notes:
+  Driver demarre, ouverture de Google Flights
+  16 resultats de vol trouves
+  Compagnie detectee: Air TransatPorter Airlines
+  Bouton 'Selectionner' non trouve, clic sur la ligne de vol
+  Bouton trouve: ''
+  Clic effectue
+  URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJVGxabU4wSlpNRjl5YlRCQlFWbHdNVUZDUnkwdExTMHRMUzB0TFhsc2EyZ3hNMEZCUVVGQlIyNU9hM2hOVGxsTE0wZEJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD
+  URLs capturees: 2 total, 0 non-Google, 0 booking
+  Seules des URLs Google ont ete observees
+  Screenshot final: C:\MesVols\debug_booking_capture\attempt_2_final.png
+
+--- Tentative 3 ---
+Timestamp:    2026-04-01 17:50:32
+Compagnie:    Air TransatPorter Airlines
+Dates:        2026-05-31 -> 2026-06-07
+Clic a:       2026-04-01 17:50:46.271668
+Statut:       ECHEC
+Erreur:       Aucune URL exploitable capturee hors de Google
+URLs externes: aucune
+Total URLs capturees: 2
+Notes:
+  Driver demarre, ouverture de Google Flights
+  16 resultats de vol trouves
+  Compagnie detectee: Air TransatPorter Airlines
+  Bouton 'Selectionner' non trouve, clic sur la ligne de vol
+  Bouton trouve: ''
+  Clic effectue
+  URL courante apres clic: https://www.google.com/travel/flights/search?tfs=CBwQAho_EgoyMDI2LTA1LTMxIh8KA1lVTBIKMjAyNi0wNS0zMRoDQ0RHKgJUUzIDMjUwagcIARIDWVVMcgcIARIDQ0RHGh4SCjIwMjYtMDYtMDdqBwgBEgNDREdyBwgBEgNZVUxAAUgBcAGCAQsI____________AZgBAQ&tfu=CmxDalJJUTIxcmVVRnVVbk50T0hOQlFVbG9kV2RDUnkwdExTMHRMUzB0TFMxMmRHb3hOMEZCUVVGQlIyNU9hM2x6UzFONWJWRkJFZ1ZVVXpJMU1Cb0xDTXZRQkJBQ0dnTkRRVVE0SEhDR3F3TT0SAggAIgA&hl=fr&gl=CA&curr=CAD
+  URLs capturees: 2 total, 0 non-Google, 0 booking
+  Seules des URLs Google ont ete observees
+  Screenshot final: C:\MesVols\debug_booking_capture\attempt_3_final.png
+
+======================================================================
+CONCLUSION: Aucun lien exploitable capture apres 3 tentatives.
+Google Flights ne redirige probablement pas vers un site externe
+lors du clic sur 'Selectionner' — il garde l'utilisateur dans
+son propre flow de reservation ou affiche les details du vol.
+======================================================================
