@@ -16,6 +16,63 @@ from links import build_skyscanner_url
 CSV_PATH = os.path.join(os.path.dirname(__file__), "prix_vols.csv")
 DATA_JS_PATH = os.path.join(os.path.dirname(__file__), "data.js")
 
+# Mapping nom de compagnie -> code IATA (pour le filtre Skyscanner)
+AIRLINE_CODES = {
+    "Air Canada": "AC",
+    "Air Transat": "TS",
+    "WestJet": "WS",
+    "Porter": "PD",
+    "Flair": "F8",
+    "Lynx": "Y9",
+    "United": "UA",
+    "Delta": "DL",
+    "American": "AA",
+    "JetBlue": "B6",
+    "Spirit": "NK",
+    "Frontier": "F9",
+    "Southwest": "WN",
+    "Air France": "AF",
+    "Lufthansa": "LH",
+    "British Airways": "BA",
+    "KLM": "KL",
+    "Swiss": "LX",
+    "Iberia": "IB",
+    "TAP Portugal": "TP",
+    "Alitalia": "AZ",
+    "ITA Airways": "AZ",
+    "Aegean": "A3",
+    "Copa": "CM",
+    "Aeromexico": "AM",
+    "Sunwing": "WG",
+    "Condor": "DE",
+    "Eurowings": "EW",
+    "Norse Atlantic": "N0",
+    "Play": "OG",
+    "Icelandair": "FI",
+    "Turkish Airlines": "TK",
+    "Emirates": "EK",
+    "Qatar Airways": "QR",
+    "Hawaiian Airlines": "HA",
+    "Alaska Airlines": "AS",
+    "Sun Country": "SY",
+    "Volaris": "Y4",
+    "VivaAerobus": "VB",
+}
+
+
+def get_airline_code(airline_name):
+    """Extrait le code IATA d'une compagnie a partir de son nom."""
+    if not airline_name or airline_name == "Inconnue":
+        return ""
+    # Match exact
+    if airline_name in AIRLINE_CODES:
+        return AIRLINE_CODES[airline_name]
+    # Match partiel (ex: "Air Canada Rouge" -> "Air Canada" -> AC)
+    for name, code in AIRLINE_CODES.items():
+        if name in airline_name or airline_name in name:
+            return code
+    return ""
+
 
 def generate_data_js():
     """Regenere data.js a partir de prix_vols.csv (supporte ancien et nouveau format)."""
@@ -70,9 +127,11 @@ def generate_data_js():
         price_g, price_s = r["price_google"], r["price_skyscanner"]
 
         # URL Skyscanner
+        airline_code = get_airline_code(r["airline"])
         skyscanner_url = build_skyscanner_url({
             "origin": origin, "destination": dest,
             "depart_date": depart, "return_date": retour,
+            "airline_code": airline_code,
         })
         # URL Google Flights
         google_url = (f"https://www.google.com/travel/flights"
