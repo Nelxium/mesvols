@@ -243,11 +243,49 @@ def main():
     print("=" * 50)
     deals = find_deals(results)
 
-    # 3. Capturer les URLs de reservation pour les aubaines >= 30%
+    # 3. Construire la liste unique de candidats a la capture
+    #    Priorite 1 : best_offer par destination (depuis les resultats du cycle)
+    #    Priorite 2 : deals >= 30% non deja couverts
+    candidates = []
+    seen = set()  # (origin, destination, depart, retour)
+
+    # 3a. Best offers du cycle courant (prix le plus bas par destination)
+    by_dest = {}
+    for r in results:
+        dest = r.get("destination", "")
+        price = r.get("price_google", 0)
+        if isinstance(price, str):
+            price = int(price) if price else 0
+        if dest not in by_dest or price < by_dest[dest].get("price_google", 0):
+            by_dest[dest] = r
+
+    for dest, r in by_dest.items():
+        stops_text = r.get("escales", "")
+        num_stops = parse_stops(stops_text)
+        key = (r["origin"], r["destination"], r["depart"], r["retour"])
+        seen.add(key)
+        candidates.append({
+            "origin": r["origin"],
+            "destination": r["destination"],
+            "depart": r["depart"],
+            "retour": r["retour"],
+            "price": r["price_google"],
+            "airline": r.get("airline", ""),
+            "stops": stops_text,
+            "num_stops": num_stops,
+        })
+
+    # 3b. Deals >= 30% non deja couverts
     notifiable = [d for d in deals if d.get("discount_pct", 0) >= 30] if deals else []
-    if notifiable:
-        print(f"\n{len(notifiable)} aubaine(s) >= 30%, capture des URLs...")
-        resolve_deals(notifiable, get_airline_code)
+    for d in notifiable:
+        key = (d.get("origin", ""), d.get("destination", ""), d.get("depart", ""), d.get("retour", ""))
+        if key not in seen:
+            seen.add(key)
+            candidates.append(d)
+
+    if candidates:
+        print(f"\n{len(candidates)} candidat(s) a la capture ({len(by_dest)} best_offer + {len(notifiable)} deal(s) >= 30%)")
+        resolve_deals(candidates, get_airline_code)
 
     # 4. Regenerer data.js (inclut deal_id + reserve_url si disponibles)
     generate_data_js()

@@ -190,7 +190,8 @@ function render(){
   const db=document.getElementById('dbanner');
   if(deals.length){db.classList.add('show');
     document.getElementById('dscroll').innerHTML=deals.map(d=>{const fl=F[d.dest]||'🌍',ci=C[d.dest]||d.dest;
-      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)}</div><a href="${d.e.reserve_url||d.e.skyscanner_url||''}" target="_blank" class="dc-btn">Réserver →</a></div>`;}).join('');
+      const hr=d.e.reserve_url||d.e.skyscanner_url||'',lb=d.e.reserve_url?'Réserver →':'Voir sur Skyscanner →';
+      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)}</div>${d.e.reserve_url?'':`<div style="font-size:.55rem;color:var(--muted);margin-top:4px">Prix observé sur Google Flights — peut différer au clic</div>`}<a href="${hr}" target="_blank" class="dc-btn">${lb}</a></div>`;}).join('');
   } else db.classList.remove('show');
 
   function sortRoutes(mode){
@@ -225,12 +226,13 @@ function render(){
     if(goodP.length>0){
       const ph=goodP.map(r=>{
         const rd=avg?Math.round(((r.price-avg)/avg)*100):0;
-        const ru=r.reserve_url||r.skyscanner_url||'';
+        const ru=r.reserve_url||r.skyscanner_url||'',rl=r.reserve_url?'Réserver →':'Voir sur Skyscanner →';
         return`<div class="card-period">
           <div class="cp-dates">${r.depart} → ${r.retour}</div>
           <div class="cp-row"><span class="cp-price">${r.price}$</span><span class="cp-avg">${avg}$</span><span class="cp-var cv-down">↓ ${Math.abs(rd)}%</span></div>
           <div class="cp-tags">${stopT(r.stops)}<span class="tag t-airline">${r.airline||''}</span></div>
-          <a href="${ru}" target="_blank" class="cp-book">Réserver →</a>
+          ${r.reserve_url?'':`<div style="font-size:.55rem;color:var(--muted);margin-bottom:4px">Prix observé sur Google Flights — peut différer au clic</div>`}
+          <a href="${ru}" target="_blank" class="cp-book">${rl}</a>
         </div>`;
       }).join('');
       bodyContent=`<div class="card-periods">${ph}</div>
@@ -239,7 +241,8 @@ function render(){
       bodyContent=`<div class="card-prices"><span class="cp-now">${lp}$</span><span class="cp-avg">${avg}$</span><span class="cp-var ${vc}">${arrow} ${Math.abs(diff)}%</span></div>
         <div class="card-tags">${stopT(best.stops)}<span class="tag t-airline">${best.airline||''}</span>${best.depart?`<span class="tag t-date">${best.depart} → ${best.retour}</span>`:''}</div>
         <div class="card-spark">${spark}</div>
-        <div class="card-btns"><a href="${skyUrl}" target="_blank" class="card-cta">Réserver →</a>
+        ${best.reserve_url?'':`<div style="font-size:.55rem;color:var(--muted);margin-bottom:4px">Prix observé sur Google Flights — peut différer au clic</div>`}
+        <div class="card-btns"><a href="${skyUrl}" target="_blank" class="card-cta">${best.reserve_url?'Réserver →':'Voir sur Skyscanner →'}</a>
         <a href="${gUrl}" target="_blank" class="card-cta2">Google Flights</a></div>`;
     }
 
