@@ -173,11 +173,13 @@ function render(){
 
   const bd={};data.forEach(r=>{const d=r.destination;if(!d)return;if(!bd[d])bd[d]=[];bd[d].push(r);});
   const routes=Object.keys(bd);
+  const bo=typeof BEST_OFFERS!=='undefined'?BEST_OFFERS:{};
+  function bof(d){return bo[d]||bd[d][bd[d].length-1];}
   const allP=data.map(r=>r.price).filter(p=>p>0);
   const minP=allP.length?Math.min(...allP):0;
 
   const deals=[];
-  routes.forEach(d=>{const p=bd[d].map(r=>r.price);if(p.length<2)return;const avg=p.reduce((a,b)=>a+b,0)/p.length;const last=p[p.length-1];if(last<avg*0.7)deals.push({dest:d,price:last,avg:Math.round(avg),pct:Math.round(((last-avg)/avg)*100),e:bd[d][bd[d].length-1]});});
+  routes.forEach(d=>{const p=bd[d].map(r=>r.price);if(p.length<2)return;const avg=p.reduce((a,b)=>a+b,0)/p.length;const cur=bof(d);if(cur.price<avg*0.7)deals.push({dest:d,price:cur.price,avg:Math.round(avg),pct:Math.round(((cur.price-avg)/avg)*100),e:cur});});
 
   document.getElementById('hstats').innerHTML=
     `<div class="hs"><div class="hs-val">${routes.length}</div><div class="hs-label">Destinations</div></div>`+
@@ -192,16 +194,16 @@ function render(){
   } else db.classList.remove('show');
 
   function sortRoutes(mode){
-    if(mode==='price-asc') routes.sort((a,b)=>bd[a][bd[a].length-1].price-bd[b][bd[b].length-1].price);
-    else if(mode==='price-desc') routes.sort((a,b)=>bd[b][bd[b].length-1].price-bd[a][bd[a].length-1].price);
-    else routes.sort((a,b)=>{const sa=bd[a][bd[a].length-1].score||0,sb=bd[b][bd[b].length-1].score||0;return sb!==sa?sb-sa:bd[a][bd[a].length-1].price-bd[b][bd[b].length-1].price;});
+    if(mode==='price-asc') routes.sort((a,b)=>bof(a).price-bof(b).price);
+    else if(mode==='price-desc') routes.sort((a,b)=>bof(b).price-bof(a).price);
+    else routes.sort((a,b)=>{const sa=bof(a).score||0,sb=bof(b).score||0;return sb!==sa?sb-sa:bof(a).price-bof(b).price;});
   }
   function renderGrid(){
   document.getElementById('grid').innerHTML=routes.map(dest=>{
-    const e=bd[dest],p=e.map(r=>r.price),avg=Math.round(p.reduce((a,b)=>a+b,0)/p.length),last=e[e.length-1],lp=last.price,mx=Math.max(...p);
+    const e=bd[dest],p=e.map(r=>r.price),avg=Math.round(p.reduce((a,b)=>a+b,0)/p.length),best=bof(dest),lp=best.price,mx=Math.max(...p);
     const diff=avg?Math.round(((lp-avg)/avg)*100):0;
     const fl=F[dest]||'🌍',ci=C[dest]||dest,img=IMG[dest]||IMG.CDG;
-    const skyUrl=last.skyscanner_url||'',gUrl=last.google_url||last.booking_url||'';
+    const skyUrl=best.skyscanner_url||'',gUrl=best.google_url||best.booking_url||'';
     const vc=diff<=-15?'cv-down':diff>=5?'cv-up':'cv-flat';
     const arrow=diff<=0?'↓':'↑';
 
@@ -235,7 +237,7 @@ function render(){
         <div class="card-spark">${spark}</div>`;
     } else {
       bodyContent=`<div class="card-prices"><span class="cp-now">${lp}$</span><span class="cp-avg">${avg}$</span><span class="cp-var ${vc}">${arrow} ${Math.abs(diff)}%</span></div>
-        <div class="card-tags">${stopT(last.stops)}<span class="tag t-airline">${last.airline||''}</span>${last.depart?`<span class="tag t-date">${last.depart}</span>`:''}</div>
+        <div class="card-tags">${stopT(best.stops)}<span class="tag t-airline">${best.airline||''}</span>${best.depart?`<span class="tag t-date">${best.depart} → ${best.retour}</span>`:''}</div>
         <div class="card-spark">${spark}</div>
         <div class="card-btns"><a href="${skyUrl}" target="_blank" class="card-cta">Réserver →</a>
         <a href="${gUrl}" target="_blank" class="card-cta2">Google Flights</a></div>`;
@@ -246,7 +248,7 @@ function render(){
         <div class="card-flag">${fl}</div>
         <div class="card-city">${ci}</div>
         <div class="card-route">YUL → ${dest}</div>
-        <div class="card-score" style="${stC(last.score)}">${st(last.score)}</div>
+        <div class="card-score" style="${stC(best.score)}">${st(best.score)}</div>
       </div>
       <div class="card-body">${bodyContent}</div>
     </div>`;

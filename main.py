@@ -177,9 +177,37 @@ def generate_data_js():
         }
         flights.append(entry)
 
+    # Calculer best_offer par destination (meilleur prix des 3 horizons du dernier scrape)
+    best_offers = {}
+    if flights:
+        latest_date = last_date[:10]
+        by_dest = defaultdict(list)
+        for f in flights:
+            if f["date"][:10] == latest_date:
+                by_dest[f["destination"]].append(f)
+
+        for dest, dest_entries in by_dest.items():
+            best = min(dest_entries, key=lambda e: e["price"])
+            best_offers[dest] = {
+                "price": best["price"],
+                "price_google": best["price_google"],
+                "price_skyscanner": best["price_skyscanner"],
+                "best_source": best["best_source"],
+                "depart": best["depart"],
+                "retour": best["retour"],
+                "airline": best["airline"],
+                "airline_code": get_airline_code(best["airline"]),
+                "stops": best["stops"],
+                "score": best["score"],
+                "skyscanner_url": best["skyscanner_url"],
+                "google_url": best["google_url"],
+            }
+
     entries = ",\n  ".join(json.dumps(f, ensure_ascii=False) for f in flights)
+    bo_json = json.dumps(best_offers, ensure_ascii=False)
     js_content = (
         f"const FLIGHT_DATA = [\n  {entries}\n];\n\n"
+        f"const BEST_OFFERS = {bo_json};\n\n"
         f'const LAST_UPDATE = "{last_date}";\n'
     )
 
