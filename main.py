@@ -6,10 +6,11 @@ Point d'entree principal : scrape, analyse et alerte.
 import csv
 import json
 import os
+import time
 from collections import defaultdict
 from datetime import datetime
 
-from scraper import run_scraper
+from scraper import run_scraper, get_driver
 from analyzer import find_deals, parse_stops, compute_score
 from notifier import send_deal_alert
 from links import build_skyscanner_url, build_search_link
@@ -254,6 +255,57 @@ def _write_health(cycle_report, candidates_total):
         print(f"Erreur ecriture health.json: {e}")
 
 
+SCREENSHOT_DIR = os.path.join(os.path.dirname(__file__), "screenshots")
+
+
+def capture_deal_screenshots(deals):
+    """Capture un screenshot Google Flights pour chaque deal notifiable (>= 30%).
+
+    Ouvre un driver Selenium, visite la page de chaque deal, prend le screenshot,
+    puis ferme le driver. Retourne un dict {(origin, dest, depart, retour): path}.
+    """
+    notifiable = [d for d in deals if d.get("discount_pct", 0) >= 30] if deals else []
+    if not notifiable:
+        return {}
+
+    print(f"\nCapture de {len(notifiable)} screenshot(s) pour les aubaines >= 30%...")
+    os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+    screenshot_map = {}
+
+    try:
+        driver = get_driver()
+    except Exception as e:
+        print(f"  Impossible d'ouvrir le driver pour les screenshots: {e}")
+        return {}
+
+    try:
+        for d in notifiable:
+            origin = d.get("origin", "")
+            dest = d.get("destination", "")
+            depart = d.get("depart", "")
+            retour = d.get("retour", "")
+            key = (origin, dest, depart, retour)
+
+            url = (f"https://www.google.com/travel/flights"
+                   f"?q=flights+from+{origin}+to+{dest}"
+                   f"+on+{depart}+return+{retour}")
+            try:
+                driver.get(url)
+                time.sleep(7)
+                fname = (f"{origin}-{dest}-{depart.replace('-','')}"
+                         f"-{retour.replace('-','')}.png")
+                spath = os.path.join(SCREENSHOT_DIR, fname)
+                driver.save_screenshot(spath)
+                screenshot_map[key] = f"screenshots/{fname}"
+                print(f"  Screenshot: {fname}")
+            except Exception as e:
+                print(f"  Erreur screenshot {origin}-{dest}: {e}")
+    finally:
+        driver.quit()
+
+    return screenshot_map
+
+
 def main():
     # 1. Scraper les prix actuels
     results = run_scraper()
@@ -268,21 +320,8 @@ def main():
     print("=" * 50)
     deals = find_deals(results)
 
-    # 2b. Identifier les screenshots a conserver (deals notifiables >= 30%)
-    notifiable_deals = [d for d in deals if d.get("discount_pct", 0) >= 30] if deals else []
-    deal_keys = set()
-    for d in notifiable_deals:
-        deal_keys.add((d.get("origin", ""), d.get("destination", ""),
-                        d.get("depart", ""), d.get("retour", "")))
-
-    # Construire le mapping screenshot pour les deals notifiables
-    screenshot_map = {}  # (origin, dest, depart, retour) -> path
-    for r in results:
-        key = (r.get("origin", ""), r.get("destination", ""),
-               r.get("depart", ""), r.get("retour", ""))
-        spath = r.get("screenshot_path", "")
-        if spath and key in deal_keys:
-            screenshot_map[key] = spath
+    # 2b. Capturer les screenshots des deals notifiables (>= 30%)
+    screenshot_map = capture_deal_screenshots(deals)
 
     # 3. Construire la liste unique de candidats a la capture
     #    Priorite 1 : best_offer par destination (depuis les resultats du cycle)
