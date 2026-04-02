@@ -9,5 +9,6 @@ debug_booking_capture/
 debug_noresult_*.png
 deals.json
 health.json
+watchdog_state.json
 logs/
 screenshots/
