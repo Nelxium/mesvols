@@ -280,6 +280,7 @@ def send_discord_alert(deals):
 
     req = Request(DISCORD_WEBHOOK_URL, data=payload, method="POST")
     req.add_header("Content-Type", "application/json")
+    req.add_header("User-Agent", "MesVols/1.0")
 
     try:
         urlopen(req)

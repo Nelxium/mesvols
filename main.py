@@ -379,6 +379,7 @@ if __name__ == "__main__":
                 }).encode("utf-8")
                 req = Request(DISCORD_WEBHOOK_URL, data=payload, method="POST")
                 req.add_header("Content-Type", "application/json")
+                req.add_header("User-Agent", "MesVols/1.0")
                 urlopen(req)
         except Exception as discord_err:
             print(f"Erreur envoi alerte Discord: {discord_err}")
