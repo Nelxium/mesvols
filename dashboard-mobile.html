@@ -194,7 +194,7 @@ function render(){
   const db=document.getElementById('dbanner');
   if(deals.length){db.classList.add('show');
     document.getElementById('dscroll').innerHTML=deals.map(d=>{const fl=F[d.dest]||'🌍',ci=C[d.dest]||d.dest;
-      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)}</div><div style="font-size:.55rem;color:var(--muted);margin-top:4px">${obsMsg(d.e.date)} — peut différer au clic</div><a href="${bkUrl(d.e)}" target="_blank" class="dc-btn">${bkLbl(d.e)} →</a></div>`;}).join('');
+      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)}</div><div style="font-size:.55rem;color:var(--muted);margin-top:4px">${obsMsg(d.e.date)} — peut différer au clic</div>${d.e.screenshot_url?`<a href="${d.e.screenshot_url}" target="_blank" style="display:inline-block;font-size:.55rem;color:var(--sky);margin-top:2px;text-decoration:underline">Voir la capture</a>`:''}<a href="${bkUrl(d.e)}" target="_blank" class="dc-btn">${bkLbl(d.e)} →</a></div>`;}).join('');
   } else db.classList.remove('show');
 
   function sortRoutes(mode){
@@ -233,7 +233,7 @@ function render(){
           <div class="cp-dates">${r.depart} → ${r.retour}</div>
           <div class="cp-row"><span class="cp-price">${r.price}$</span><span class="cp-avg">${avg}$</span><span class="cp-var cv-down">↓ ${Math.abs(rd)}%</span></div>
           <div class="cp-tags">${stopT(r.stops)}<span class="tag t-airline">${r.airline||''}</span></div>
-          <div style="font-size:.55rem;color:var(--muted);margin-bottom:4px">${obsMsg(r.date)} — peut différer au clic</div>
+          <div style="font-size:.55rem;color:var(--muted);margin-bottom:4px">${obsMsg(r.date)} — peut différer au clic${r.screenshot_url?` · <a href="${r.screenshot_url}" target="_blank" style="color:var(--sky);text-decoration:underline">Voir la capture</a>`:''}</div>
           <a href="${bkUrl(r)}" target="_blank" class="cp-book">${bkLbl(r)} →</a>
         </div>`;
       }).join('');
@@ -243,7 +243,7 @@ function render(){
       bodyContent=`<div class="card-prices"><span class="cp-now">${lp}$</span><span class="cp-avg">${avg}$</span><span class="cp-var ${vc}">${arrow} ${Math.abs(diff)}%</span></div>
         <div class="card-tags">${stopT(best.stops)}<span class="tag t-airline">${best.airline||''}</span>${best.depart?`<span class="tag t-date">${best.depart} → ${best.retour}</span>`:''}</div>
         <div class="card-spark">${spark}</div>
-        <div style="font-size:.55rem;color:var(--muted);margin-bottom:4px">${obsMsg(best.date)} — peut différer au clic</div>
+        <div style="font-size:.55rem;color:var(--muted);margin-bottom:4px">${obsMsg(best.date)} — peut différer au clic${best.screenshot_url?` · <a href="${best.screenshot_url}" target="_blank" style="color:var(--sky);text-decoration:underline">Voir la capture</a>`:''}</div>
         <a href="${skyUrl}" target="_blank" class="card-cta">${bkLbl(best)} →</a>`;
     }
 

@@ -103,7 +103,7 @@ def _migrate_csv():
                          "booking_url": burl})
 
     with open(CSV_FILE, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=CSV_FIELDNAMES)
+        writer = csv.DictWriter(f, fieldnames=CSV_FIELDNAMES, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(rows)
     print(f"CSV migre vers nouveau format ({len(rows)} lignes)")
@@ -284,6 +284,8 @@ def parse_flight_results(driver):
 
 HORIZONS = [30, 60, 90]  # Jours dans le futur a scraper
 
+SCREENSHOT_DIR = os.path.join(os.path.dirname(__file__), "screenshots")
+
 
 def scrape_route(driver, origin, destination, route_name):
     """Scrape le prix le moins cher pour une route sur plusieurs horizons (30/60/90 jours)."""
@@ -323,6 +325,17 @@ def scrape_route(driver, origin, destination, route_name):
                            f"?q=flights+from+{origin}+to+{destination}"
                            f"+on+{d_str}+return+{r_str}")
 
+            # Screenshot de la page Google Flights (preuve visuelle)
+            screenshot_path = ""
+            try:
+                os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+                fname = f"{origin}-{destination}-{d_str.replace('-','')}-{r_str.replace('-','')}.png"
+                spath = os.path.join(SCREENSHOT_DIR, fname)
+                driver.save_screenshot(spath)
+                screenshot_path = f"screenshots/{fname}"
+            except Exception:
+                pass
+
             all_results.append({
                 "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
                 "route": route_name,
@@ -335,6 +348,7 @@ def scrape_route(driver, origin, destination, route_name):
                 "depart": d_str,
                 "retour": r_str,
                 "booking_url": booking_url,
+                "screenshot_path": screenshot_path,
             })
 
         except Exception as e:
@@ -355,7 +369,7 @@ def save_to_csv(results):
     file_exists = os.path.isfile(CSV_FILE)
 
     with open(CSV_FILE, "a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=CSV_FIELDNAMES)
+        writer = csv.DictWriter(f, fieldnames=CSV_FIELDNAMES, extrasaction="ignore")
         if not file_exists:
             writer.writeheader()
         for row in results:

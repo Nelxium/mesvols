@@ -77,10 +77,13 @@ def get_airline_code(airline_name):
     return ""
 
 
-def generate_data_js(best_offers_current=None):
+def generate_data_js(best_offers_current=None, screenshot_map=None):
     """Regenere data.js a partir de prix_vols.csv (supporte ancien et nouveau format).
     best_offers_current : dict {dest: {...}} calcule depuis les resultats du cycle courant.
-    Si fourni, utilise comme BEST_OFFERS au lieu de recalculer depuis le CSV."""
+    Si fourni, utilise comme BEST_OFFERS au lieu de recalculer depuis le CSV.
+    screenshot_map : dict {(origin, dest, depart, retour): path} pour les deals."""
+    if screenshot_map is None:
+        screenshot_map = {}
     raw_rows = []
     last_date = ""
     route_prices = defaultdict(list)
@@ -194,6 +197,7 @@ def generate_data_js(best_offers_current=None):
             "final_domain": cap.get("final_domain", "") if cap_live else "",
             "search_url": search_url,
             "search_label": search_label,
+            "screenshot_url": screenshot_map.get((origin, dest, depart, retour), ""),
         }
         flights.append(entry)
 
@@ -264,6 +268,22 @@ def main():
     print("=" * 50)
     deals = find_deals(results)
 
+    # 2b. Identifier les screenshots a conserver (deals notifiables >= 30%)
+    notifiable_deals = [d for d in deals if d.get("discount_pct", 0) >= 30] if deals else []
+    deal_keys = set()
+    for d in notifiable_deals:
+        deal_keys.add((d.get("origin", ""), d.get("destination", ""),
+                        d.get("depart", ""), d.get("retour", "")))
+
+    # Construire le mapping screenshot pour les deals notifiables
+    screenshot_map = {}  # (origin, dest, depart, retour) -> path
+    for r in results:
+        key = (r.get("origin", ""), r.get("destination", ""),
+               r.get("depart", ""), r.get("retour", ""))
+        spath = r.get("screenshot_path", "")
+        if spath and key in deal_keys:
+            screenshot_map[key] = spath
+
     # 3. Construire la liste unique de candidats a la capture
     #    Priorite 1 : best_offer par destination (depuis les resultats du cycle)
     #    Priorite 2 : deals >= 30% non deja couverts
@@ -321,6 +341,8 @@ def main():
             "final_domain": cap.get("final_domain", "") if cap_live else "",
             "search_url": search_url,
             "search_label": search_label,
+            "screenshot_url": screenshot_map.get(
+                (r["origin"], dest, r["depart"], r["retour"]), ""),
         }
 
         key = (r["origin"], r["destination"], r["depart"], r["retour"])
@@ -350,7 +372,7 @@ def main():
         _, cycle_report = resolve_deals(candidates, get_airline_code)
 
     # 4. Regenerer data.js (inclut deal_id + reserve_url si disponibles)
-    generate_data_js(best_offers_current)
+    generate_data_js(best_offers_current, screenshot_map)
 
     # 4b. Ecrire health.json
     _write_health(cycle_report, len(candidates))

@@ -244,7 +244,7 @@ function render(){
   const db=document.getElementById('dbanner');
   if(deals.length){db.classList.add('show');
     document.getElementById('dscroll').innerHTML=deals.map(d=>{const fl=F[d.dest]||'🌍',ci=C[d.dest]||d.dest;
-      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)} <span style="${stC(d.e.score)};font-size:.72rem">${st(d.e.score)}</span>${d.e.best_source?`<span style="font-size:.62rem;color:var(--dim);margin-left:4px">via ${d.e.best_source}</span>`:''}</div><div style="font-size:.58rem;color:var(--muted);margin-top:4px">${obsMsg(d.e.date)} — peut différer au clic</div><a href="${bkUrl(d.e)}" target="_blank" class="dc-btn">${bkLbl(d.e)} →</a></div>`;}).join('');
+      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)} <span style="${stC(d.e.score)};font-size:.72rem">${st(d.e.score)}</span>${d.e.best_source?`<span style="font-size:.62rem;color:var(--dim);margin-left:4px">via ${d.e.best_source}</span>`:''}</div><div style="font-size:.58rem;color:var(--muted);margin-top:4px">${obsMsg(d.e.date)} — peut différer au clic</div>${d.e.screenshot_url?`<a href="${d.e.screenshot_url}" target="_blank" style="display:inline-block;font-size:.58rem;color:var(--sky);margin-top:2px;text-decoration:underline">Voir la capture</a>`:''}<a href="${bkUrl(d.e)}" target="_blank" class="dc-btn">${bkLbl(d.e)} →</a></div>`;}).join('');
   } else db.classList.remove('show');
 
   // Cards
@@ -284,7 +284,7 @@ function render(){
           <div class="cp-dates">${r.depart} → ${r.retour}</div>
           <div class="cp-row"><span class="cp-price">${r.price}$</span><span class="cp-avg">${avg}$</span><span class="cp-var cv-down">↓ ${Math.abs(rd)}%</span></div>
           <div class="cp-tags">${stopT(r.stops)}<span class="tag t-airline">${r.airline||''}</span></div>
-          <div style="font-size:.58rem;color:var(--muted);margin-bottom:4px">${obsMsg(r.date)} — peut différer au clic</div>
+          <div style="font-size:.58rem;color:var(--muted);margin-bottom:4px">${obsMsg(r.date)} — peut différer au clic${r.screenshot_url?` · <a href="${r.screenshot_url}" target="_blank" style="color:var(--sky);text-decoration:underline">Voir la capture</a>`:''}</div>
           <a href="${bkUrl(r)}" target="_blank" class="cp-book">${bkLbl(r)} →</a>
         </div>`;
       }).join('');
@@ -297,7 +297,7 @@ function render(){
         <div style="font-size:.62rem;color:var(--muted);margin-bottom:3px">Évolution du prix ▾</div>
         <div class="card-spark">${spark}</div>
         <div style="font-size:.65rem;color:var(--muted);margin-bottom:10px">${best.price_skyscanner?`<span style="margin-right:8px">Google: <b>${best.price_google}$</b></span><span>Skyscanner: <b>${best.price_skyscanner}$</b></span>`:`Prix via ${best.best_source||'Google Flights'}`}${best.best_source&&best.price_skyscanner?` — <span style="color:var(--teal);font-weight:600">Meilleur: ${best.best_source}</span>`:''}</div>
-        <div style="font-size:.58rem;color:var(--muted);margin-bottom:6px">${obsMsg(best.date)} — peut différer au clic</div>
+        <div style="font-size:.58rem;color:var(--muted);margin-bottom:6px">${obsMsg(best.date)} — peut différer au clic${best.screenshot_url?` · <a href="${best.screenshot_url}" target="_blank" style="color:var(--sky);text-decoration:underline">Voir la capture</a>`:''}</div>
         <a href="${skyUrl}" target="_blank" class="card-cta">${bkLbl(best)} →</a>`;
     }
 
