@@ -282,7 +282,7 @@ function render(){
           <div class="cp-dates">${r.depart} → ${r.retour}</div>
           <div class="cp-row"><span class="cp-price">${r.price}$</span><span class="cp-avg">${avg}$</span><span class="cp-var cv-down">↓ ${Math.abs(rd)}%</span></div>
           <div class="cp-tags">${stopT(r.stops)}<span class="tag t-airline">${r.airline||''}</span></div>
-          <div style="font-size:.58rem;color:var(--muted);margin-bottom:4px">Prix observé sur Google Flights — peut différer au clic</div>
+          <div style="font-size:.58rem;color:var(--muted);margin-bottom:4px">Prix vu à ${(r.date||'').slice(11,16)||'—'} sur Google Flights — peut différer au clic</div>
           <a href="${bkUrl(r)}" target="_blank" class="cp-book">${bkLbl(r)} →</a>
         </div>`;
       }).join('');
@@ -295,7 +295,7 @@ function render(){
         <div style="font-size:.62rem;color:var(--muted);margin-bottom:3px">Évolution du prix ▾</div>
         <div class="card-spark">${spark}</div>
         <div style="font-size:.65rem;color:var(--muted);margin-bottom:10px">${best.price_skyscanner?`<span style="margin-right:8px">Google: <b>${best.price_google}$</b></span><span>Skyscanner: <b>${best.price_skyscanner}$</b></span>`:`Prix via ${best.best_source||'Google Flights'}`}${best.best_source&&best.price_skyscanner?` — <span style="color:var(--teal);font-weight:600">Meilleur: ${best.best_source}</span>`:''}</div>
-        <div style="font-size:.58rem;color:var(--muted);margin-bottom:6px">Prix observé sur Google Flights — peut différer au clic</div>
+        <div style="font-size:.58rem;color:var(--muted);margin-bottom:6px">Prix vu à ${(best.date||'').slice(11,16)||'—'} sur Google Flights — peut différer au clic</div>
         <a href="${skyUrl}" target="_blank" class="card-cta">${bkLbl(best)} →</a>`;
     }
 
