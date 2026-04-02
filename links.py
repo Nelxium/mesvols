@@ -42,7 +42,7 @@ def build_united_search_url(origin, dest, depart_date, return_date):
 def build_kayak_search_url(origin, dest, depart_date, return_date):
     """Recherche pre-remplie sur kayak.com."""
     return (
-        f"https://www.ca.kayak.com/flights/{origin}-{dest}"
+        f"https://ca.kayak.com/flights/{origin}-{dest}"
         f"/{depart_date}/{return_date}?sort=bestflight_a"
     )
 
