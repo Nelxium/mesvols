@@ -15,6 +15,7 @@ DOCS = os.path.join(HERE, "docs")
 # Fichiers a copier vers docs/
 FILES = {
     "data.js": "data.js",
+    "ci_health.json": "ci_health.json",
 }
 
 # index.html est maintenu directement dans docs/ (base sur dashboard-mobile.html)

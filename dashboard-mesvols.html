@@ -214,15 +214,18 @@ function revalBadge(e){const s=e.revalidation_status;if(!s)return'';const p=e.re
 function skyFallback(o,d,dep,ret){const dd=(dep||'').replace(/-/g,'').slice(2),rd=(ret||'').replace(/-/g,'').slice(2);return`https://www.skyscanner.ca/transport/flights/${(o||'yul').toLowerCase()}/${d.toLowerCase()}/${dd}/${rd}/?adultsv2=1&cabinclass=economy&market=CA&locale=fr-CA&currency=CAD`;}
 document.getElementById('csv-input').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=ev=>{const lines=ev.target.result.trim().split('\n'),hdr=lines[0].split(',').map(h=>h.trim().toLowerCase());window.FLIGHT_DATA=[];for(let i=1;i<lines.length;i++){const v=lines[i].split(',').map(s=>s.trim());if(v.length<3)continue;const o={};hdr.forEach((h,j)=>o[h]=v[j]||'');const p=parseFloat((o.price_cad||o.price||'0').replace(/[^0-9.]/g,''));if(!p)continue;const orig=o.origin||'YUL',dest=o.destination||'',dep=o.depart||'',ret=o.retour||'';FLIGHT_DATA.push({date:o.date,route:o.route,origin:orig,destination:dest,price:p,airline:o.airline||'Inconnue',stops:o.escales||o.stops||'',depart:dep,retour:ret,booking_url:o.booking_url||'',skyscanner_url:o.skyscanner_url||skyFallback(orig,dest,dep,ret),google_url:o.google_url||'',score:parseInt(o.score)||0});}window.LAST_UPDATE=FLIGHT_DATA.length?FLIGHT_DATA[FLIGHT_DATA.length-1].date:'';render();};rd.readAsText(f);});
 
-function obsMsg(d){const t=(d||'').slice(11,16);if(!t)return'Prix observé sur Google Flights';const ago=freshAge(d);return ago?'Prix vu à '+t+' ('+ago+') sur Google Flights':'Prix vu à '+t+' sur Google Flights';}
-function freshAge(d){if(!d||d.length<16)return'';try{const[dp,tp]=d.split(' ');const[Y,M,D]=dp.split('-').map(Number);const[h,m]=tp.split(':').map(Number);const then=new Date(Y,M-1,D,h,m);const now=new Date();const diff=Math.floor((now-then)/60000);if(diff<0)return'';if(diff<1)return'à l\u2019instant';if(diff<60)return'il y a '+diff+' min';if(diff<120)return'il y a 1 h';if(diff<1440)return'il y a '+Math.floor(diff/60)+' h';if(diff<2880)return'hier';return'il y a '+Math.floor(diff/1440)+' j';}catch(e){return'';}}
+function parseTs(d){if(!d)return null;const isUtc=d.endsWith('Z');const c=isUtc?d.slice(0,-1):d;const[dp,tp]=(c+' ').split(' ');const[Y,M,D]=dp.split('-').map(Number);const[h,m]=(tp||'0:0').split(':').map(Number);return isUtc?new Date(Date.UTC(Y,M-1,D,h,m)):new Date(Y,M-1,D,h,m);}
+function fmtMtl(d){if(!d)return'';const dt=parseTs(d);if(!dt||isNaN(dt))return d.endsWith('Z')?d.slice(0,-1):d;return dt.toLocaleString('fr-CA',{timeZone:'America/Montreal',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replace(',',' ');}
+function fmtTime(d){if(!d)return'';const dt=parseTs(d);if(!dt||isNaN(dt))return(d||'').slice(11,16);return dt.toLocaleTimeString('fr-CA',{timeZone:'America/Montreal',hour:'2-digit',minute:'2-digit',hour12:false});}
+function obsMsg(d){const t=fmtTime(d);if(!t)return'Prix observé sur Google Flights';const ago=freshAge(d);return ago?'Prix vu à '+t+' ('+ago+') sur Google Flights':'Prix vu à '+t+' sur Google Flights';}
+function freshAge(d){if(!d)return'';try{const dt=parseTs(d);if(!dt||isNaN(dt))return'';const diff=Math.floor((new Date()-dt)/60000);if(diff<0)return'';if(diff<1)return'à l\u2019instant';if(diff<60)return'il y a '+diff+' min';if(diff<120)return'il y a 1 h';if(diff<1440)return'il y a '+Math.floor(diff/60)+' h';if(diff<2880)return'hier';return'il y a '+Math.floor(diff/1440)+' j';}catch(e){return'';}}
 function render(){
   if(typeof FLIGHT_DATA==='undefined'||!FLIGHT_DATA||!FLIGHT_DATA.length){showEmpty();return;}
   document.getElementById('empty').style.display='none';document.getElementById('data').style.display='block';
   const data=[...FLIGHT_DATA].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const upd=typeof LAST_UPDATE!=='undefined'?LAST_UPDATE:'';
   document.getElementById('sub').textContent=`Surveillance active — ${data.length} captures`;
-  document.getElementById('upd').textContent=upd?'Mis à jour : '+upd:'';
+  document.getElementById('upd').textContent=upd?'Mis à jour : '+fmtMtl(upd):'';
 
   const bd={};data.forEach(r=>{const d=r.destination;if(!d)return;if(!bd[d])bd[d]=[];bd[d].push(r);});
   const routes=Object.keys(bd);

@@ -3,11 +3,17 @@ MesVols - Pipeline CI (GitHub Actions).
 Scrape + generation data.js, sans booking capture ni alertes.
 """
 
+import json
+import os
 import sys
+from datetime import datetime, timezone
+
 from scraper import run_scraper
 from main import generate_data_js, get_airline_code
 from analyzer import find_deals, parse_stops, compute_score
 from links import build_skyscanner_url, build_search_link
+
+CI_HEALTH_PATH = os.path.join(os.path.dirname(__file__), "ci_health.json")
 
 
 def main():
@@ -75,6 +81,21 @@ def main():
 
     # 4. Regenerer data.js
     generate_data_js(best_offers_current)
+
+    # 5. Ecrire ci_health.json (visible sur GitHub Pages)
+    prices = [r.get("price_google", 0) for r in results]
+    health = {
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ"),
+        "status": "ok",
+        "routes_scraped": len(results),
+        "destinations": len(by_dest),
+        "deals_detected": len(deals) if deals else 0,
+        "min_price": min(prices) if prices else None,
+    }
+    with open(CI_HEALTH_PATH, "w", encoding="utf-8") as f:
+        json.dump(health, f, ensure_ascii=False, indent=2)
+    print(f"ci_health.json ecrit ({health['routes_scraped']} routes)")
+
     print("\nPipeline CI termine.")
 
 

@@ -8,7 +8,7 @@ import json
 import os
 import time
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 
 from scraper import run_scraper, get_driver
 from analyzer import find_deals, parse_stops, compute_score
@@ -211,7 +211,23 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
         flights.append(entry)
 
     # BEST_OFFERS : utiliser le calcul du cycle courant si fourni
+    # Recalculer les scores avec les moyennes historiques (les appelants
+    # n'ont pas acces a route_avg au moment ou ils construisent best_offers)
     best_offers = best_offers_current if best_offers_current else {}
+    if best_offers:
+        dest_to_route = {}
+        for r in raw_rows:
+            if r["dest"] not in dest_to_route:
+                dest_to_route[r["dest"]] = r["route"]
+        for dest, info in best_offers.items():
+            route = dest_to_route.get(dest, "")
+            if route and route in route_avg:
+                num_stops = parse_stops(info.get("stops", ""))
+                price = info.get("price", info.get("price_google", 0))
+                if isinstance(price, str):
+                    price = int(price) if price else 0
+                info["score"] = compute_score(
+                    price, route_avg[route], num_stops, route_min.get(route))
 
     entries = ",\n  ".join(json.dumps(f, ensure_ascii=False) for f in flights)
     bo_json = json.dumps(best_offers, ensure_ascii=False)
@@ -233,7 +249,7 @@ HEALTH_PATH = os.path.join(os.path.dirname(__file__), "health.json")
 def _write_health(cycle_report, candidates_total):
     """Ecrit health.json apres chaque cycle."""
     health = {
-        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ"),
         "capture": {
             "candidates_total": candidates_total,
             "eligible_total": 0,
@@ -303,7 +319,7 @@ def revalidate_and_capture(deals):
     except Exception as e:
         print(f"  Impossible d'ouvrir le driver: {e}")
         # Fallback : tout garder sans revalidation
-        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%MZ")
         for d in notifiable:
             key = (d.get("origin", ""), d.get("destination", ""),
                    d.get("depart", ""), d.get("retour", ""))
@@ -320,7 +336,7 @@ def revalidate_and_capture(deals):
             retour = d.get("retour", "")
             initial_price = d.get("price", 0)
             key = (origin, dest, depart, retour)
-            now = datetime.now().strftime("%Y-%m-%d %H:%M")
+            now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%MZ")
 
             url = (f"https://www.google.com/travel/flights"
                    f"?q=flights+from+{origin}+to+{dest}"

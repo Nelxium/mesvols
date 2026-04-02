@@ -166,15 +166,18 @@ function stopT(s){if(!s&&s!==0)return'';const t=String(s).toLowerCase().trim();i
 function bkUrl(e){return e.search_url||e.skyscanner_url||'';}
 function bkLbl(e){return e.search_label||'Voir sur Skyscanner →';}
 function revalBadge(e){const s=e.revalidation_status;if(!s)return'';const p=e.revalidated_price;if(s==='confirmed')return`<span style="font-size:.55rem;color:var(--teal)">Prix revalidé : ${p}$</span>`;if(s==='expired')return'<span style="font-size:.55rem;color:var(--accent2)">Prix expiré (hausse détectée)</span>';if(s==='failed')return'<span style="font-size:.55rem;color:var(--dim);font-style:italic">Prix à confirmer — revalidation indisponible</span>';return'';}
-function obsMsg(d){const t=(d||'').slice(11,16);if(!t)return'Prix observé sur Google Flights';const ago=freshAge(d);return ago?'Prix vu à '+t+' ('+ago+') sur Google Flights':'Prix vu à '+t+' sur Google Flights';}
-function freshAge(d){if(!d||d.length<16)return'';try{const[dp,tp]=d.split(' ');const[Y,M,D]=dp.split('-').map(Number);const[h,m]=tp.split(':').map(Number);const then=new Date(Y,M-1,D,h,m);const now=new Date();const diff=Math.floor((now-then)/60000);if(diff<0)return'';if(diff<1)return'à l\u2019instant';if(diff<60)return'il y a '+diff+' min';if(diff<120)return'il y a 1 h';if(diff<1440)return'il y a '+Math.floor(diff/60)+' h';if(diff<2880)return'hier';return'il y a '+Math.floor(diff/1440)+' j';}catch(e){return'';}}
+function parseTs(d){if(!d)return null;const isUtc=d.endsWith('Z');const c=isUtc?d.slice(0,-1):d;const[dp,tp]=(c+' ').split(' ');const[Y,M,D]=dp.split('-').map(Number);const[h,m]=(tp||'0:0').split(':').map(Number);return isUtc?new Date(Date.UTC(Y,M-1,D,h,m)):new Date(Y,M-1,D,h,m);}
+function fmtMtl(d){if(!d)return'';const dt=parseTs(d);if(!dt||isNaN(dt))return d.endsWith('Z')?d.slice(0,-1):d;return dt.toLocaleString('fr-CA',{timeZone:'America/Montreal',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replace(',',' ');}
+function fmtTime(d){if(!d)return'';const dt=parseTs(d);if(!dt||isNaN(dt))return(d||'').slice(11,16);return dt.toLocaleTimeString('fr-CA',{timeZone:'America/Montreal',hour:'2-digit',minute:'2-digit',hour12:false});}
+function obsMsg(d){const t=fmtTime(d);if(!t)return'Prix observé sur Google Flights';const ago=freshAge(d);return ago?'Prix vu à '+t+' ('+ago+') sur Google Flights':'Prix vu à '+t+' sur Google Flights';}
+function freshAge(d){if(!d)return'';try{const dt=parseTs(d);if(!dt||isNaN(dt))return'';const diff=Math.floor((new Date()-dt)/60000);if(diff<0)return'';if(diff<1)return'à l\u2019instant';if(diff<60)return'il y a '+diff+' min';if(diff<120)return'il y a 1 h';if(diff<1440)return'il y a '+Math.floor(diff/60)+' h';if(diff<2880)return'hier';return'il y a '+Math.floor(diff/1440)+' j';}catch(e){return'';}}
 function render(){
   if(typeof FLIGHT_DATA==='undefined'||!FLIGHT_DATA||!FLIGHT_DATA.length)return;
   document.getElementById('data').style.display='block';
   const data=[...FLIGHT_DATA].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const upd=typeof LAST_UPDATE!=='undefined'?LAST_UPDATE:'';
   document.getElementById('sub').textContent=`${data.length} captures`;
-  document.getElementById('upd').textContent=upd?upd:'';
+  document.getElementById('upd').textContent=upd?fmtMtl(upd):'';
 
   const bd={};data.forEach(r=>{const d=r.destination;if(!d)return;if(!bd[d])bd[d]=[];bd[d].push(r);});
   const routes=Object.keys(bd);

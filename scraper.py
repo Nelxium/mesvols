@@ -11,7 +11,7 @@ import re
 import sys
 import time
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -324,7 +324,7 @@ def scrape_route(driver, origin, destination, route_name):
                            f"+on+{d_str}+return+{r_str}")
 
             all_results.append({
-                "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "date": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%MZ"),
                 "route": route_name,
                 "origin": origin,
                 "destination": destination,
