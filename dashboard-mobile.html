@@ -165,7 +165,8 @@ function stC(s){return s>=5?'color:var(--gold)':s>=4?'color:var(--teal)':s>=3?'c
 function stopT(s){if(!s&&s!==0)return'';const t=String(s).toLowerCase().trim();if(t==='direct'||t==='sans escale'||t==='0'||t==='nonstop')return'<span class="tag t-direct">Direct</span>';const m=t.match(/^(\d+)/);if(m){const n=parseInt(m[1],10);if(n===0)return'<span class="tag t-direct">Direct</span>';if(n===1)return'<span class="tag t-1">1 escale</span>';return'<span class="tag t-2">'+n+' escales</span>';}return'<span class="tag t-2">'+s+'</span>';}
 function bkUrl(e){return e.search_url||e.skyscanner_url||'';}
 function bkLbl(e){return e.search_label||'Voir sur Skyscanner →';}
-function obsMsg(d){const t=(d||'').slice(11,16);return t?'Prix vu à '+t+' sur Google Flights':'Prix observé sur Google Flights';}
+function obsMsg(d){const t=(d||'').slice(11,16);if(!t)return'Prix observé sur Google Flights';const ago=freshAge(d);return ago?'Prix vu à '+t+' ('+ago+') sur Google Flights':'Prix vu à '+t+' sur Google Flights';}
+function freshAge(d){if(!d||d.length<16)return'';try{const[dp,tp]=d.split(' ');const[Y,M,D]=dp.split('-').map(Number);const[h,m]=tp.split(':').map(Number);const then=new Date(Y,M-1,D,h,m);const now=new Date();const diff=Math.floor((now-then)/60000);if(diff<0)return'';if(diff<1)return'à l\u2019instant';if(diff<60)return'il y a '+diff+' min';if(diff<120)return'il y a 1 h';if(diff<1440)return'il y a '+Math.floor(diff/60)+' h';if(diff<2880)return'hier';return'il y a '+Math.floor(diff/1440)+' j';}catch(e){return'';}}
 function render(){
   if(typeof FLIGHT_DATA==='undefined'||!FLIGHT_DATA||!FLIGHT_DATA.length)return;
   document.getElementById('data').style.display='block';
