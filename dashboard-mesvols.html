@@ -213,6 +213,7 @@ function bkLbl(e){return e.search_label||'Voir sur Skyscanner →';}
 function skyFallback(o,d,dep,ret){const dd=(dep||'').replace(/-/g,'').slice(2),rd=(ret||'').replace(/-/g,'').slice(2);return`https://www.skyscanner.ca/transport/flights/${(o||'yul').toLowerCase()}/${d.toLowerCase()}/${dd}/${rd}/?adultsv2=1&cabinclass=economy&market=CA&locale=fr-CA&currency=CAD`;}
 document.getElementById('csv-input').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=ev=>{const lines=ev.target.result.trim().split('\n'),hdr=lines[0].split(',').map(h=>h.trim().toLowerCase());window.FLIGHT_DATA=[];for(let i=1;i<lines.length;i++){const v=lines[i].split(',').map(s=>s.trim());if(v.length<3)continue;const o={};hdr.forEach((h,j)=>o[h]=v[j]||'');const p=parseFloat((o.price_cad||o.price||'0').replace(/[^0-9.]/g,''));if(!p)continue;const orig=o.origin||'YUL',dest=o.destination||'',dep=o.depart||'',ret=o.retour||'';FLIGHT_DATA.push({date:o.date,route:o.route,origin:orig,destination:dest,price:p,airline:o.airline||'Inconnue',stops:o.escales||o.stops||'',depart:dep,retour:ret,booking_url:o.booking_url||'',skyscanner_url:o.skyscanner_url||skyFallback(orig,dest,dep,ret),google_url:o.google_url||'',score:parseInt(o.score)||0});}window.LAST_UPDATE=FLIGHT_DATA.length?FLIGHT_DATA[FLIGHT_DATA.length-1].date:'';render();};rd.readAsText(f);});
 
+function obsMsg(d){const t=(d||'').slice(11,16);return t?'Prix vu à '+t+' sur Google Flights':'Prix observé sur Google Flights';}
 function render(){
   if(typeof FLIGHT_DATA==='undefined'||!FLIGHT_DATA||!FLIGHT_DATA.length){showEmpty();return;}
   document.getElementById('empty').style.display='none';document.getElementById('data').style.display='block';
@@ -282,7 +283,7 @@ function render(){
           <div class="cp-dates">${r.depart} → ${r.retour}</div>
           <div class="cp-row"><span class="cp-price">${r.price}$</span><span class="cp-avg">${avg}$</span><span class="cp-var cv-down">↓ ${Math.abs(rd)}%</span></div>
           <div class="cp-tags">${stopT(r.stops)}<span class="tag t-airline">${r.airline||''}</span></div>
-          <div style="font-size:.58rem;color:var(--muted);margin-bottom:4px">Prix vu à ${(r.date||'').slice(11,16)||'—'} sur Google Flights — peut différer au clic</div>
+          <div style="font-size:.58rem;color:var(--muted);margin-bottom:4px">${obsMsg(r.date)} — peut différer au clic</div>
           <a href="${bkUrl(r)}" target="_blank" class="cp-book">${bkLbl(r)} →</a>
         </div>`;
       }).join('');
@@ -295,7 +296,7 @@ function render(){
         <div style="font-size:.62rem;color:var(--muted);margin-bottom:3px">Évolution du prix ▾</div>
         <div class="card-spark">${spark}</div>
         <div style="font-size:.65rem;color:var(--muted);margin-bottom:10px">${best.price_skyscanner?`<span style="margin-right:8px">Google: <b>${best.price_google}$</b></span><span>Skyscanner: <b>${best.price_skyscanner}$</b></span>`:`Prix via ${best.best_source||'Google Flights'}`}${best.best_source&&best.price_skyscanner?` — <span style="color:var(--teal);font-weight:600">Meilleur: ${best.best_source}</span>`:''}</div>
-        <div style="font-size:.58rem;color:var(--muted);margin-bottom:6px">Prix vu à ${(best.date||'').slice(11,16)||'—'} sur Google Flights — peut différer au clic</div>
+        <div style="font-size:.58rem;color:var(--muted);margin-bottom:6px">${obsMsg(best.date)} — peut différer au clic</div>
         <a href="${skyUrl}" target="_blank" class="card-cta">${bkLbl(best)} →</a>`;
     }
 
