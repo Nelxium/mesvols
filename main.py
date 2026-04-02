@@ -78,13 +78,16 @@ def get_airline_code(airline_name):
     return ""
 
 
-def generate_data_js(best_offers_current=None, screenshot_map=None):
+def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=None):
     """Regenere data.js a partir de prix_vols.csv (supporte ancien et nouveau format).
     best_offers_current : dict {dest: {...}} calcule depuis les resultats du cycle courant.
     Si fourni, utilise comme BEST_OFFERS au lieu de recalculer depuis le CSV.
-    screenshot_map : dict {(origin, dest, depart, retour): path} pour les deals."""
+    screenshot_map : dict {(origin, dest, depart, retour): path} pour les deals.
+    reval_map : dict {(origin, dest, depart, retour): {revalidated_price, ...}}."""
     if screenshot_map is None:
         screenshot_map = {}
+    if reval_map is None:
+        reval_map = {}
     raw_rows = []
     last_date = ""
     route_prices = defaultdict(list)
@@ -200,6 +203,11 @@ def generate_data_js(best_offers_current=None, screenshot_map=None):
             "search_label": search_label,
             "screenshot_url": screenshot_map.get((origin, dest, depart, retour), ""),
         }
+        reval = reval_map.get((origin, dest, depart, retour))
+        if reval:
+            entry["revalidated_price"] = reval.get("revalidated_price")
+            entry["revalidated_at"] = reval.get("revalidated_at", "")
+            entry["revalidation_status"] = reval.get("revalidation_status", "")
         flights.append(entry)
 
     # BEST_OFFERS : utiliser le calcul du cycle courant si fourni
@@ -258,25 +266,51 @@ def _write_health(cycle_report, candidates_total):
 SCREENSHOT_DIR = os.path.join(os.path.dirname(__file__), "screenshots")
 
 
-def capture_deal_screenshots(deals):
-    """Capture un screenshot Google Flights pour chaque deal notifiable (>= 30%).
+# Revalidation : seuils pour considerer un deal comme encore valide
+REVAL_PCT_THRESHOLD = 0.15   # +15% max par rapport au prix initial
+REVAL_ABS_THRESHOLD = 50     # +50$ max par rapport au prix initial
 
-    Ouvre un driver Selenium, visite la page de chaque deal, prend le screenshot,
-    puis ferme le driver. Retourne un dict {(origin, dest, depart, retour): path}.
+
+def revalidate_and_capture(deals):
+    """Revalide le prix et capture un screenshot pour chaque deal >= 30%.
+
+    Pour chaque deal notifiable, visite la page Google Flights, extrait le
+    prix actuel, prend un screenshot, et determine si le deal est toujours
+    valide. Retourne (screenshot_map, revalidation_map).
+
+    screenshot_map: {(origin, dest, depart, retour): path}
+    revalidation_map: {(origin, dest, depart, retour): {
+        revalidated_price, revalidated_at, revalidation_status
+    }}
+
+    revalidation_status:
+      - "confirmed"  : prix stable ou en baisse
+      - "degraded"   : prix monte mais dans les seuils (+15% ET +50$)
+      - "expired"    : prix monte au-dela des seuils -> deal a exclure
+      - "failed"     : revalidation impossible -> deal conserve par prudence
     """
     notifiable = [d for d in deals if d.get("discount_pct", 0) >= 30] if deals else []
     if not notifiable:
-        return {}
+        return {}, {}
 
-    print(f"\nCapture de {len(notifiable)} screenshot(s) pour les aubaines >= 30%...")
+    print(f"\nRevalidation + screenshot de {len(notifiable)} aubaine(s) >= 30%...")
     os.makedirs(SCREENSHOT_DIR, exist_ok=True)
     screenshot_map = {}
+    reval_map = {}
 
     try:
         driver = get_driver()
     except Exception as e:
-        print(f"  Impossible d'ouvrir le driver pour les screenshots: {e}")
-        return {}
+        print(f"  Impossible d'ouvrir le driver: {e}")
+        # Fallback : tout garder sans revalidation
+        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        for d in notifiable:
+            key = (d.get("origin", ""), d.get("destination", ""),
+                   d.get("depart", ""), d.get("retour", ""))
+            reval_map[key] = {"revalidated_price": None,
+                              "revalidated_at": now,
+                              "revalidation_status": "failed"}
+        return {}, reval_map
 
     try:
         for d in notifiable:
@@ -284,7 +318,9 @@ def capture_deal_screenshots(deals):
             dest = d.get("destination", "")
             depart = d.get("depart", "")
             retour = d.get("retour", "")
+            initial_price = d.get("price", 0)
             key = (origin, dest, depart, retour)
+            now = datetime.now().strftime("%Y-%m-%d %H:%M")
 
             url = (f"https://www.google.com/travel/flights"
                    f"?q=flights+from+{origin}+to+{dest}"
@@ -292,18 +328,52 @@ def capture_deal_screenshots(deals):
             try:
                 driver.get(url)
                 time.sleep(7)
+
+                # Screenshot
                 fname = (f"{origin}-{dest}-{depart.replace('-','')}"
                          f"-{retour.replace('-','')}.png")
                 spath = os.path.join(SCREENSHOT_DIR, fname)
                 driver.save_screenshot(spath)
                 screenshot_map[key] = f"screenshots/{fname}"
-                print(f"  Screenshot: {fname}")
+
+                # Revalidation du prix
+                from scraper import parse_flight_results
+                flights = parse_flight_results(driver)
+                if flights:
+                    best = min(flights, key=lambda f: f["price"])
+                    new_price = best["price"]
+                    diff = new_price - initial_price
+                    pct_change = diff / initial_price if initial_price else 0
+
+                    if new_price <= initial_price:
+                        status = "confirmed"
+                    elif pct_change <= REVAL_PCT_THRESHOLD and diff <= REVAL_ABS_THRESHOLD:
+                        status = "confirmed"
+                    else:
+                        status = "expired"
+
+                    reval_map[key] = {"revalidated_price": new_price,
+                                      "revalidated_at": now,
+                                      "revalidation_status": status}
+                    sym = "✓" if status == "confirmed" else "✗"
+                    print(f"  {sym} {origin}-{dest}: {initial_price}$ -> "
+                          f"{new_price}$ ({status})")
+                else:
+                    reval_map[key] = {"revalidated_price": None,
+                                      "revalidated_at": now,
+                                      "revalidation_status": "failed"}
+                    print(f"  ? {origin}-{dest}: revalidation impossible "
+                          f"(aucun vol trouve)")
+
             except Exception as e:
-                print(f"  Erreur screenshot {origin}-{dest}: {e}")
+                reval_map[key] = {"revalidated_price": None,
+                                  "revalidated_at": now,
+                                  "revalidation_status": "failed"}
+                print(f"  ? {origin}-{dest}: erreur revalidation ({e})")
     finally:
         driver.quit()
 
-    return screenshot_map
+    return screenshot_map, reval_map
 
 
 def main():
@@ -319,9 +389,6 @@ def main():
     print("Analyse des prix")
     print("=" * 50)
     deals = find_deals(results)
-
-    # 2b. Capturer les screenshots des deals notifiables (>= 30%)
-    screenshot_map = capture_deal_screenshots(deals)
 
     # 3. Construire la liste unique de candidats a la capture
     #    Priorite 1 : best_offer par destination (depuis les resultats du cycle)
@@ -383,6 +450,12 @@ def main():
             "screenshot_url": screenshot_map.get(
                 (r["origin"], dest, r["depart"], r["retour"]), ""),
         }
+        reval = reval_map.get((r["origin"], dest, r["depart"], r["retour"]))
+        if reval:
+            best_offers_current[dest]["revalidated_price"] = reval.get("revalidated_price")
+            best_offers_current[dest]["revalidated_at"] = reval.get("revalidated_at", "")
+            best_offers_current[dest]["revalidation_status"] = reval.get(
+                "revalidation_status", "")
 
         key = (r["origin"], r["destination"], r["depart"], r["retour"])
         seen.add(key)
@@ -410,22 +483,37 @@ def main():
         print(f"\n{len(candidates)} candidat(s) a la capture ({len(by_dest)} best_offer + {len(notifiable)} deal(s) >= 30%)")
         _, cycle_report = resolve_deals(candidates, get_airline_code)
 
-    # 4. Regenerer data.js (inclut deal_id + reserve_url si disponibles)
-    generate_data_js(best_offers_current, screenshot_map)
+    # 4. Revalidation + screenshot des deals >= 30% (juste avant publication)
+    screenshot_map, reval_map = revalidate_and_capture(deals)
 
-    # 4b. Ecrire health.json
+    # Filtrer les deals expires de la liste notifiable
+    expired_keys = {k for k, v in reval_map.items()
+                    if v.get("revalidation_status") == "expired"}
+    if expired_keys:
+        before = len(notifiable)
+        notifiable = [d for d in notifiable
+                      if (d.get("origin", ""), d.get("destination", ""),
+                          d.get("depart", ""), d.get("retour", ""))
+                      not in expired_keys]
+        print(f"  {before - len(notifiable)} deal(s) expire(s) apres revalidation")
+
+    # 5. Regenerer data.js (inclut deal_id + reserve_url + revalidation)
+    generate_data_js(best_offers_current, screenshot_map, reval_map)
+
+    # 5b. Ecrire health.json
     _write_health(cycle_report, len(candidates))
 
-    # 5. Envoyer une alerte si aubaine(s)
+    # 6. Envoyer une alerte si aubaine(s) encore valides
     if deals:
         print(f"\n{len(deals)} AUBAINE(S) DETECTEE(S) !")
         skipped = len(deals) - len(notifiable)
         if notifiable:
             send_deal_alert(notifiable)
             if skipped:
-                print(f"  ({skipped} aubaine(s) < 30% de rabais ignoree(s) dans l'email)")
+                print(f"  ({skipped} aubaine(s) exclue(s) de l'alerte "
+                      f"(< 30% ou prix expire))")
         else:
-            print("  Aucune aubaine >= 30% de rabais, email non envoye.")
+            print("  Aucune aubaine valide >= 30% apres revalidation.")
     else:
         print("\nPas d'aubaine aujourd'hui. Les prix sont normaux.")
 
