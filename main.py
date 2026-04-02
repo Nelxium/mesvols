@@ -14,7 +14,7 @@ from analyzer import find_deals, parse_stops, compute_score
 from notifier import send_deal_alert
 from links import build_skyscanner_url
 from booking_capture import make_deal_id, load_deals, is_fresh, resolve_deals
-from config import BASE_URL
+from config import BASE_URL, ENABLE_DIRECT_BOOKING
 
 CSV_PATH = os.path.join(os.path.dirname(__file__), "prix_vols.csv")
 DATA_JS_PATH = os.path.join(os.path.dirname(__file__), "data.js")
@@ -167,7 +167,7 @@ def generate_data_js(best_offers_current=None):
         # deal_id + reserve_url si capture disponible
         deal_id = make_deal_id(origin, dest, depart, retour, airline_code, r["airline"])
         cap = captured_deals.get(deal_id)
-        cap_live = cap and cap.get("success") and is_fresh(cap)
+        cap_live = ENABLE_DIRECT_BOOKING and cap and cap.get("success") and is_fresh(cap)
         reserve_url = BASE_URL + "/r/" + deal_id if cap_live else ""
 
         entry = {
@@ -288,7 +288,7 @@ def main():
         deal_id = make_deal_id(r["origin"], dest, r["depart"], r["retour"],
                                airline_code, r.get("airline", ""))
         cap = captured_deals.get(deal_id)
-        cap_live = cap and cap.get("success") and is_fresh(cap)
+        cap_live = ENABLE_DIRECT_BOOKING and cap and cap.get("success") and is_fresh(cap)
         reserve_url = BASE_URL + "/r/" + deal_id if cap_live else ""
         sky_url = build_skyscanner_url({
             "origin": r["origin"], "destination": dest,

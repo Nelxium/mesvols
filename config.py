@@ -20,6 +20,9 @@ DEAL_THRESHOLD = 0.40
 # URL de base du serveur (pour les liens /r/<deal_id> dans data.js)
 BASE_URL = "http://localhost:8080"
 
+# Activer les liens directs captures dans le dashboard (False = fallback Skyscanner)
+ENABLE_DIRECT_BOOKING = False
+
 # Routes a surveiller (depart, arrivee, nom affiche)
 ROUTES = [
     ("YUL", "CDG", "Montreal -> Paris"),
