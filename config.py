@@ -12,7 +12,7 @@ GMAIL_APP_PASSWORD = "uggl pmdf lnwy elqg"
 ALERT_RECIPIENTS = ["nelxium@gmail.com"]
 
 # Webhook Discord (pour recevoir les alertes dans un canal Discord)
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1489085699905814559/Eu1FbKsmlGylFkMd6_HJk03owy3g7Nz5tijFOTAsdWkx5sA9XARirgJuUmlrtxWpS0jK"
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1489087195431305226/ojiIry8AT6UHaSVnFqYvcXQnChKOvBxuTHt_GRn9PTX4QIsddBOVKwiaD0QoX0Ha8EJ8"
 
 # Seuil de rabais pour declencher une alerte (0.40 = 40 %)
 DEAL_THRESHOLD = 0.40
