@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MesVols</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Fraunces:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#faf8f5;--card:#fff;--text:#1a1a2e;--dim:#6b7085;--muted:#a0a5b8;--accent:#e85d24;--accent2:#ff7a3d;--teal:#0d9488;--teal-l:#ccfbf1;--sky:#0284c7;--sky-l:#e0f2fe;--rose:#e11d48;--rose-l:#ffe4e6;--gold:#d97706;--emerald:#059669;--emerald-l:#d1fae5;--border:rgba(0,0,0,0.06);--border2:rgba(0,0,0,0.1);--shadow:0 1px 3px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.03);--shadow2:0 8px 32px rgba(0,0,0,0.08);--r:16px;--r2:20px}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(250,248,245,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.logo{font-family:'Fraunces',serif;font-size:1.1rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:6px;font-weight:700}
+.logo-icon{width:28px;height:28px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem}
+.nav-r{display:flex;gap:6px;align-items:center}
+.nav-time{font-size:.65rem;color:var(--muted)}
+.live{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;color:var(--teal);background:var(--teal-l);padding:4px 10px;border-radius:100px;font-weight:600}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+main{padding:58px 12px 24px}
+
+/* HERO — compact */
+.hero{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);border-radius:var(--r2);padding:20px 18px 16px;margin-bottom:16px;color:#fff;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1436491865332-7a61a109db05?w=600&q=40') center/cover;opacity:.12;mix-blend-mode:luminosity}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(26,26,46,0.88),rgba(15,52,96,0.78))}
+.hero>*{position:relative;z-index:1}
+.hero h1{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;line-height:1.2;margin-bottom:4px}
+.hero h1 em{font-style:italic;color:var(--accent2)}
+.hero-sub{color:rgba(255,255,255,0.5);font-size:.72rem;margin-bottom:12px}
+.hero-stats{display:flex;gap:0;justify-content:space-between}
+.hs{text-align:center;flex:1}
+.hs-val{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700}
+.hs-label{font-size:.55rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+
+/* DEALS */
+.deal-banner{background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1px solid rgba(232,93,36,0.15);border-radius:var(--r2);padding:14px 14px 10px;margin-bottom:16px;display:none}
+.deal-banner.show{display:block}
+.deal-title{font-weight:700;font-size:.78rem;color:var(--accent);margin-bottom:10px}
+.deal-scroll{display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;scroll-snap-type:x mandatory}
+.deal-card{background:#fff;border:1px solid rgba(232,93,36,0.1);border-radius:var(--r);padding:14px;min-width:170px;flex-shrink:0;scroll-snap-align:start}
+.dc-dest{font-weight:700;font-size:.82rem;margin-bottom:6px}
+.dc-price{font-family:'Fraunces',serif;font-size:1.3rem;color:var(--accent);font-weight:700}
+.dc-avg{font-size:.7rem;color:var(--muted);text-decoration:line-through;margin-left:4px}
+.dc-meta{display:flex;gap:4px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.dc-btn{display:block;margin-top:10px;text-align:center;padding:12px;background:var(--accent);color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:.82rem;min-height:44px;display:flex;align-items:center;justify-content:center}
+
+/* CARDS */
+/* FILTER */
+.filter-bar{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.filter-btn{padding:5px 12px;border-radius:100px;border:1px solid var(--border2);background:var(--bg);color:var(--dim);font-size:.68rem;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.filter-btn:active{transform:scale(0.95)}
+.filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.sec-title{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px}
+.grid{display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.card-img{height:120px;background-size:cover;background-position:center;position:relative}
+.card-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 60%)}
+.card-flag{position:absolute;top:10px;left:10px;width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;font-size:1rem;z-index:2}
+.card-city{position:absolute;bottom:10px;left:12px;color:#fff;font-family:'Fraunces',serif;font-size:1.15rem;font-weight:700;z-index:2}
+.card-route{position:absolute;bottom:10px;right:12px;color:rgba(255,255,255,0.7);font-size:.65rem;z-index:2}
+.card-score{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.5);color:var(--gold);padding:3px 8px;border-radius:100px;font-size:.65rem;z-index:2}
+.card-body{padding:14px 16px 16px}
+.card-prices{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.cp-now{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:700;color:var(--text)}
+.cp-avg{font-size:.78rem;color:var(--muted);text-decoration:line-through}
+.cp-var{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:100px}
+.cv-down{background:var(--emerald-l);color:var(--emerald)}.cv-up{background:var(--rose-l);color:var(--rose)}.cv-flat{background:rgba(0,0,0,0.04);color:var(--muted)}
+.card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.tag{display:inline-flex;align-items:center;padding:4px 10px;border-radius:100px;font-size:.68rem;font-weight:600}
+.t-direct{background:var(--teal-l);color:var(--teal)}.t-1{background:var(--sky-l);color:var(--sky)}.t-2{background:var(--rose-l);color:var(--rose)}.t-airline{background:rgba(0,0,0,0.04);color:var(--dim)}.t-date{background:rgba(124,58,237,0.08);color:#7c3aed}
+.card-spark{height:44px;margin-bottom:12px}
+.card-spark svg{width:100%;height:100%;display:block}
+.card-btns{display:flex;gap:8px}
+.card-cta{flex:1;text-align:center;padding:14px 8px;background:var(--accent);color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:.82rem;min-height:48px;display:flex;align-items:center;justify-content:center}
+.card-cta:active{background:var(--accent2);transform:scale(0.97)}
+.card-cta2{flex:1;text-align:center;padding:14px 8px;background:transparent;color:var(--dim);border-radius:12px;text-decoration:none;font-weight:700;font-size:.82rem;border:1px solid var(--border2);min-height:48px;display:flex;align-items:center;justify-content:center}
+.card-cta2:active{background:rgba(0,0,0,0.03)}
+.card-periods{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.card-period{background:var(--emerald-l);border:1px solid rgba(5,150,105,0.12);border-radius:12px;padding:10px 12px}
+.cp-dates{font-size:.65rem;color:var(--emerald);font-weight:600;margin-bottom:4px}
+.cp-row{display:flex;align-items:baseline;gap:6px;margin-bottom:6px}
+.cp-price{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:700;color:var(--text)}
+.cp-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.cp-book{display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;background:var(--emerald);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:.78rem;min-height:44px}
+.cp-book:active{background:#047857;transform:scale(0.97)}
+
+/* CHART */
+.chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:20px;box-shadow:var(--shadow)}
+.chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.chart-title{font-weight:700;font-size:.85rem}
+.sel{background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:8px 12px;border-radius:10px;font-size:.78rem;font-family:'Sora',sans-serif;min-height:36px}
+.chart-canvas{position:relative;height:180px;margin-bottom:10px}
+.chart-info{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+.ci{font-size:.75rem;color:var(--dim)}
+.ci span{font-weight:700}
+
+footer{text-align:center;padding:20px 12px;font-size:.6rem;color:var(--muted)}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="logo"><div class="logo-icon">✈</div>MesVols</a>
+  <div class="nav-r"><span class="nav-time" id="upd"></span><span id="clock" style="margin-left:6px;font-variant-numeric:tabular-nums;font-size:.85rem;color:#e85d24;font-weight:600"></span><div class="live"><span class="dot"></span>Live</div></div>
+</nav>
+
+<main>
+  <div class="hero">
+    <h1>Meilleur <em>prix</em> garanti</h1>
+    <p class="hero-sub" id="sub">Chargement...</p>
+    <div class="hero-stats" id="hstats"></div>
+  </div>
+
+  <div id="data" style="display:none">
+    <div class="deal-banner" id="dbanner"><div class="deal-title">🔥 Aubaines</div><div class="deal-scroll" id="dscroll"></div></div>
+
+    <div class="sec-title">Destinations</div>
+    <div class="filter-bar" id="filters">
+      <button class="filter-btn active" data-sort="price-asc">Prix croissant</button>
+      <button class="filter-btn" data-sort="price-desc">Prix décroissant</button>
+      <button class="filter-btn" data-sort="score">Score</button>
+    </div>
+    <div class="grid" id="grid"></div>
+
+    <div class="chart-wrap">
+      <div class="chart-head"><span class="chart-title">Évolution</span><select class="sel" id="csel"></select></div>
+      <div class="chart-canvas"><canvas id="chart"></canvas></div>
+      <div class="chart-info" id="cinfo"></div>
+    </div>
+  </div>
+</main>
+
+<footer>MesVols — Mis à jour automatiquement</footer>
+
+<script src="data.js" onerror="document.getElementById('sub').textContent='En attente de données...'"></script>
+<script>
+const F={CDG:'🇫🇷',CUN:'🇲🇽',NRT:'🇯🇵',HND:'🇯🇵',PUJ:'🇩🇴',HNL:'🇺🇸',JFK:'🇺🇸',MIA:'🇺🇸',BCN:'🇪🇸',BKK:'🇹🇭',FCO:'🇮🇹',HAV:'🇨🇺',LIS:'🇵🇹',LHR:'🇬🇧',ATH:'🇬🇷'};
+const C={CDG:'Paris',CUN:'Cancún',NRT:'Tokyo',HND:'Tokyo',PUJ:'Punta Cana',HNL:'Hawaï',JFK:'New York',MIA:'Miami',BCN:'Barcelone',BKK:'Bangkok',FCO:'Rome',HAV:'La Havane',LIS:'Lisbonne',LHR:'Londres',ATH:'Athènes'};
+const IMG={
+  CDG:'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=50',
+  CUN:'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?w=400&q=50',
+  NRT:'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=50',
+  HND:'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&q=50',
+  PUJ:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&q=50',
+  HNL:'https://images.unsplash.com/photo-1507876466758-bc54f384809c?w=400&q=50',
+  JFK:'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&q=50',
+  BCN:'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=400&q=50',
+  BKK:'https://images.unsplash.com/photo-1528181304800-259b08848526?w=400&q=50',
+  FCO:'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400&q=50',
+  HAV:'https://images.unsplash.com/photo-1500759285222-a95626b934cb?w=400&q=50',
+  LIS:'https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=400&q=50',
+  LHR:'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&q=50',
+  ATH:'https://images.unsplash.com/photo-1555993539-1732b0258235?w=400&q=50',
+  MIA:'https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?w=400&q=50'
+};
+
+function st(s){const n=s||0;return'★'.repeat(n)+'☆'.repeat(5-n);}
+function stC(s){return s>=5?'color:var(--gold)':s>=4?'color:var(--teal)':s>=3?'color:var(--sky)':'color:var(--muted)';}
+function stopT(s){if(!s)return'';const t=s.toLowerCase();if(t.includes('direct')||t==='0')return'<span class="tag t-direct">Direct</span>';if(t.includes('1'))return'<span class="tag t-1">1 escale</span>';return'<span class="tag t-2">'+s+'</span>';}
+function bkUrl(e){return e.search_url||e.skyscanner_url||'';}
+function bkLbl(e){return e.search_label||'Voir sur Skyscanner →';}
+function render(){
+  if(typeof FLIGHT_DATA==='undefined'||!FLIGHT_DATA||!FLIGHT_DATA.length)return;
+  document.getElementById('data').style.display='block';
+  const data=[...FLIGHT_DATA].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const upd=typeof LAST_UPDATE!=='undefined'?LAST_UPDATE:'';
+  document.getElementById('sub').textContent=`${data.length} captures`;
+  document.getElementById('upd').textContent=upd?upd:'';
+
+  const bd={};data.forEach(r=>{const d=r.destination;if(!d)return;if(!bd[d])bd[d]=[];bd[d].push(r);});
+  const routes=Object.keys(bd);
+  const bo=typeof BEST_OFFERS!=='undefined'?BEST_OFFERS:{};
+  function bof(d){return bo[d]||bd[d][bd[d].length-1];}
+  const allP=data.map(r=>r.price).filter(p=>p>0);
+  const minP=allP.length?Math.min(...allP):0;
+
+  const deals=[];
+  routes.forEach(d=>{const p=bd[d].map(r=>r.price);if(p.length<2)return;const avg=p.reduce((a,b)=>a+b,0)/p.length;const cur=bof(d);if(cur.price<avg*0.7)deals.push({dest:d,price:cur.price,avg:Math.round(avg),pct:Math.round(((cur.price-avg)/avg)*100),e:cur});});
+
+  document.getElementById('hstats').innerHTML=
+    `<div class="hs"><div class="hs-val">${routes.length}</div><div class="hs-label">Destinations</div></div>`+
+    `<div class="hs"><div class="hs-val" style="color:var(--accent2)">${minP}$</div><div class="hs-label">Meilleur</div></div>`+
+    `<div class="hs"><div class="hs-val">${data.length}</div><div class="hs-label">Captures</div></div>`+
+    `<div class="hs"><div class="hs-val" style="color:${deals.length?'var(--accent2)':'rgba(255,255,255,0.3)'}">${deals.length}</div><div class="hs-label">Aubaines</div></div>`;
+
+  const db=document.getElementById('dbanner');
+  if(deals.length){db.classList.add('show');
+    document.getElementById('dscroll').innerHTML=deals.map(d=>{const fl=F[d.dest]||'🌍',ci=C[d.dest]||d.dest;
+      return`<div class="deal-card"><div class="dc-dest">${fl} ${ci}</div><div><span class="dc-price">${d.price}$</span><span class="dc-avg">${d.avg}$</span></div><div class="dc-meta">${stopT(d.e.stops)}</div><div style="font-size:.55rem;color:var(--muted);margin-top:4px">Prix observé sur Google Flights — peut différer au clic</div><a href="${bkUrl(d.e)}" target="_blank" class="dc-btn">${bkLbl(d.e)} →</a></div>`;}).join('');
+  } else db.classList.remove('show');
+
+  function sortRoutes(mode){
+    if(mode==='price-asc') routes.sort((a,b)=>bof(a).price-bof(b).price);
+    else if(mode==='price-desc') routes.sort((a,b)=>bof(b).price-bof(a).price);
+    else routes.sort((a,b)=>{const sa=bof(a).score||0,sb=bof(b).score||0;return sb!==sa?sb-sa:bof(a).price-bof(b).price;});
+  }
+  function renderGrid(){
+  document.getElementById('grid').innerHTML=routes.map(dest=>{
+    const e=bd[dest],p=e.map(r=>r.price),avg=Math.round(p.reduce((a,b)=>a+b,0)/p.length),best=bof(dest),lp=best.price,mx=Math.max(...p);
+    const diff=avg?Math.round(((lp-avg)/avg)*100):0;
+    const fl=F[dest]||'🌍',ci=C[dest]||dest,img=IMG[dest]||IMG.CDG;
+    const skyUrl=bkUrl(best);
+    const vc=diff<=-15?'cv-down':diff>=5?'cv-up':'cv-flat';
+    const arrow=diff<=0?'↓':'↑';
+
+    const sp=p.slice(-24),spMn=Math.min(...sp),spMx=Math.max(...sp),spR=spMx-spMn||1;
+    const W=300,H=44,pad=2;
+    const pts=sp.map((v,i)=>{const x=pad+i*((W-2*pad)/(sp.length-1||1));const y=pad+(1-(v-spMn)/spR)*(H-2*pad);return`${x.toFixed(1)},${y.toFixed(1)}`;});
+    const line=pts.join(' ');
+    const area=`${pad},${H-pad} ${line} ${W-pad},${H-pad}`;
+    const spark=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><defs><linearGradient id="sg${dest}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e85d24" stop-opacity="0.25"/><stop offset="100%" stop-color="#e85d24" stop-opacity="0"/></linearGradient></defs><polygon points="${area}" fill="url(#sg${dest})"/><polyline points="${line}" fill="none" stroke="#e85d24" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${pts[pts.length-1].split(',')[0]}" cy="${pts[pts.length-1].split(',')[1]}" r="3" fill="#e85d24" stroke="#fff" stroke-width="1.5"/></svg>`;
+
+    // Find periods with good prices (20%+ below average)
+    const lastSD=e[e.length-1].date.slice(0,10);
+    const latE=e.filter(r=>r.date.slice(0,10)===lastSD);
+    const byDep={};latE.forEach(r=>{if(r.depart)byDep[r.depart]=r;});
+    const periods=Object.values(byDep).sort((a,b)=>(a.depart||'').localeCompare(b.depart||''));
+    const goodP=periods.filter(r=>r.price<avg*0.8);
+
+    let bodyContent;
+    if(goodP.length>0){
+      const ph=goodP.map(r=>{
+        const rd=avg?Math.round(((r.price-avg)/avg)*100):0;
+        return`<div class="card-period">
+          <div class="cp-dates">${r.depart} → ${r.retour}</div>
+          <div class="cp-row"><span class="cp-price">${r.price}$</span><span class="cp-avg">${avg}$</span><span class="cp-var cv-down">↓ ${Math.abs(rd)}%</span></div>
+          <div class="cp-tags">${stopT(r.stops)}<span class="tag t-airline">${r.airline||''}</span></div>
+          <div style="font-size:.55rem;color:var(--muted);margin-bottom:4px">Prix observé sur Google Flights — peut différer au clic</div>
+          <a href="${bkUrl(r)}" target="_blank" class="cp-book">${bkLbl(r)} →</a>
+        </div>`;
+      }).join('');
+      bodyContent=`<div class="card-periods">${ph}</div>
+        <div class="card-spark">${spark}</div>`;
+    } else {
+      bodyContent=`<div class="card-prices"><span class="cp-now">${lp}$</span><span class="cp-avg">${avg}$</span><span class="cp-var ${vc}">${arrow} ${Math.abs(diff)}%</span></div>
+        <div class="card-tags">${stopT(best.stops)}<span class="tag t-airline">${best.airline||''}</span>${best.depart?`<span class="tag t-date">${best.depart} → ${best.retour}</span>`:''}</div>
+        <div class="card-spark">${spark}</div>
+        <div style="font-size:.55rem;color:var(--muted);margin-bottom:4px">Prix observé sur Google Flights — peut différer au clic</div>
+        <a href="${skyUrl}" target="_blank" class="card-cta">${bkLbl(best)} →</a>`;
+    }
+
+    return`<div class="card">
+      <div class="card-img" style="background-image:url('${img}')">
+        <div class="card-flag">${fl}</div>
+        <div class="card-city">${ci}</div>
+        <div class="card-route">YUL → ${dest}</div>
+        <div class="card-score" style="${stC(best.score)}">${st(best.score)}</div>
+      </div>
+      <div class="card-body">${bodyContent}</div>
+    </div>`;
+  }).join('');
+  }
+  sortRoutes('price-asc');renderGrid();
+  document.querySelectorAll('#filters .filter-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#filters .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');sortRoutes(btn.dataset.sort);renderGrid();});});
+
+  const sel=document.getElementById('csel');
+  sel.innerHTML=routes.map(d=>`<option value="${d}">${C[d]||d}</option>`).join('');
+  sel.onchange=()=>drawChart(bd,sel.value);drawChart(bd,routes[0]);
+}
+
+let chartInstance=null;
+function drawChart(bd,dest){
+  const info=document.getElementById('cinfo'),d=bd[dest]||[];
+  if(!d.length){info.innerHTML='';return;}
+  const p=d.map(r=>r.price),mx=Math.max(...p),mn=Math.min(...p),avg=Math.round(p.reduce((a,b)=>a+b,0)/p.length);
+  const labels=d.map(r=>{const dt=(r.date||'').split(' ')[0];return dt.slice(5)||dt;});
+
+  if(chartInstance){chartInstance.destroy();}
+  const ctx=document.getElementById('chart').getContext('2d');
+  const gradient=ctx.createLinearGradient(0,0,0,180);
+  gradient.addColorStop(0,'rgba(232,93,36,0.25)');
+  gradient.addColorStop(1,'rgba(232,93,36,0.01)');
+
+  chartInstance=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[
+        {label:'Prix',data:p,borderColor:'#e85d24',backgroundColor:gradient,borderWidth:2,pointBackgroundColor:'#e85d24',pointBorderColor:'#fff',pointBorderWidth:1.5,pointRadius:3,pointHoverRadius:6,fill:true,tension:0.35},
+        {label:'Moyenne',data:Array(p.length).fill(avg),borderColor:'rgba(160,165,184,0.4)',borderWidth:1,borderDash:[5,4],pointRadius:0,pointHoverRadius:0,fill:false}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#1a1a2e',titleFont:{family:'Sora',size:11},bodyFont:{family:'Sora',size:12,weight:'bold'},padding:10,cornerRadius:8,displayColors:false,
+          callbacks:{
+            title:function(items){return d[items[0].dataIndex]?d[items[0].dataIndex].date:'';},
+            label:function(item){if(item.datasetIndex===1)return'Moy: '+avg+' $';return item.parsed.y+' $';}
+          }
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{family:'Sora',size:9},color:'#a0a5b8',maxRotation:0,maxTicksLimit:5}},
+        y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{family:'Sora',size:9},color:'#a0a5b8',callback:function(v){return v+'$';}},suggestedMin:mn*0.9,suggestedMax:mx*1.05}
+      }
+    }
+  });
+  info.innerHTML=`<div class="ci">Min <span style="color:var(--teal)">${mn}$</span></div><div class="ci">Moy <span>${avg}$</span></div><div class="ci">Max <span style="color:var(--rose)">${mx}$</span></div><div class="ci">Actuel <span style="color:var(--accent)">${p[p.length-1]}$</span></div>`;
+}
+
+// Auto-reload desactive en mode statique (les donnees changent au push)
+if(typeof FLIGHT_DATA!=='undefined'&&FLIGHT_DATA&&FLIGHT_DATA.length)render();
+
+(function(){const cl=document.getElementById('clock');function tick(){cl.textContent=new Date().toLocaleTimeString('fr-CA',{timeZone:'America/Montreal',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});}tick();setInterval(tick,1000);})();
+</script>
+</body>
+</html>
