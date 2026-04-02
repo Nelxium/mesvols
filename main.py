@@ -11,7 +11,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 
 from scraper import run_scraper, get_driver
-from analyzer import find_deals, parse_stops, compute_score
+from analyzer import find_deals, parse_stops, compute_score, MIN_DATAPOINTS
 from notifier import send_deal_alert
 from links import build_skyscanner_url, build_search_link
 from booking_capture import make_deal_id, load_deals, is_fresh, resolve_deals
@@ -90,7 +90,7 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
         reval_map = {}
     raw_rows = []
     last_date = ""
-    route_prices = defaultdict(list)
+    route_prices = defaultdict(list)  # tous les prix (pour FLIGHT_DATA scores)
 
     with open(CSV_PATH, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -128,9 +128,22 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
             })
             last_date = date
 
-    # Calculer les moyennes et minimums par route
+    # Calculer les moyennes et minimums par route (inclut tout, pour FLIGHT_DATA)
     route_avg = {r: sum(p) / len(p) for r, p in route_prices.items()}
     route_min = {r: min(p) for r, p in route_prices.items()}
+
+    # Baseline historique sans le cycle courant (pour BEST_OFFERS)
+    # Exclure les lignes du dernier timestamp pour eviter l'auto-contamination
+    route_prices_prior = defaultdict(list)
+    for r in raw_rows:
+        if r["date"] != last_date:
+            route = r["route"]
+            best_price = min(r["price_google"], r["price_skyscanner"]) \
+                if r["price_skyscanner"] else r["price_google"]
+            route_prices_prior[route].append(best_price)
+    route_avg_prior = {r: sum(p) / len(p) for r, p in route_prices_prior.items()}
+    route_min_prior = {r: min(p) for r, p in route_prices_prior.items()}
+    route_count_prior = {r: len(p) for r, p in route_prices_prior.items()}
 
     # Charger les deals captures pour ajouter deal_id / reserve_url
     captured_deals = load_deals()
@@ -211,8 +224,8 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
         flights.append(entry)
 
     # BEST_OFFERS : utiliser le calcul du cycle courant si fourni
-    # Recalculer les scores avec les moyennes historiques (les appelants
-    # n'ont pas acces a route_avg au moment ou ils construisent best_offers)
+    # Recalculer les scores avec la baseline historique SANS le cycle courant
+    # pour eviter l'auto-contamination, et exiger MIN_DATAPOINTS d'historique
     best_offers = best_offers_current if best_offers_current else {}
     if best_offers:
         dest_to_route = {}
@@ -221,13 +234,18 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
                 dest_to_route[r["dest"]] = r["route"]
         for dest, info in best_offers.items():
             route = dest_to_route.get(dest, "")
-            if route and route in route_avg:
+            prior_count = route_count_prior.get(route, 0)
+            if route and route in route_avg_prior and prior_count >= MIN_DATAPOINTS:
                 num_stops = parse_stops(info.get("stops", ""))
                 price = info.get("price", info.get("price_google", 0))
                 if isinstance(price, str):
                     price = int(price) if price else 0
                 info["score"] = compute_score(
-                    price, route_avg[route], num_stops, route_min.get(route))
+                    price, route_avg_prior[route], num_stops,
+                    route_min_prior.get(route))
+            else:
+                # Pas assez d'historique : score neutre (3 = pas de comparaison)
+                info["score"] = 3
 
     entries = ",\n  ".join(json.dumps(f, ensure_ascii=False) for f in flights)
     bo_json = json.dumps(best_offers, ensure_ascii=False)

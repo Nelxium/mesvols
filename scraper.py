@@ -12,6 +12,7 @@ import sys
 import time
 import traceback
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -289,8 +290,9 @@ def scrape_route(driver, origin, destination, route_name):
     """Scrape le prix le moins cher pour une route sur plusieurs horizons (30/60/90 jours)."""
     all_results = []
 
+    MTL = ZoneInfo("America/Montreal")
     for days_ahead in HORIZONS:
-        depart = datetime.now() + timedelta(days=days_ahead)
+        depart = datetime.now(MTL) + timedelta(days=days_ahead)
         retour = depart + timedelta(days=7)
         d_str = depart.strftime("%Y-%m-%d")
         r_str = retour.strftime("%Y-%m-%d")

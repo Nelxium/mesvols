@@ -8,21 +8,49 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from scraper import run_scraper
+from scraper import run_scraper, HORIZONS
+from config import ROUTES
 from main import generate_data_js, get_airline_code
 from analyzer import find_deals, parse_stops, compute_score
 from links import build_skyscanner_url, build_search_link
 
 CI_HEALTH_PATH = os.path.join(os.path.dirname(__file__), "ci_health.json")
 
+# Seuil minimum de couverture pour publier (50% des resultats attendus)
+MIN_COVERAGE_RATIO = 0.50
+
+
+def _write_health(results, by_dest, deals, status):
+    """Ecrit ci_health.json quel que soit le statut."""
+    expected = len(ROUTES) * len(HORIZONS)
+    actual = len(results) if results else 0
+    prices = [r.get("price_google", 0) for r in results] if results else []
+    health = {
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ"),
+        "status": status,
+        "routes_expected": expected,
+        "routes_scraped": actual,
+        "coverage_pct": round(actual / expected * 100) if expected else 0,
+        "destinations": len(by_dest) if by_dest else 0,
+        "deals_detected": len(deals) if deals else 0,
+        "min_price": min(prices) if prices else None,
+    }
+    with open(CI_HEALTH_PATH, "w", encoding="utf-8") as f:
+        json.dump(health, f, ensure_ascii=False, indent=2)
+    return health
+
 
 def main():
     # 1. Scraper
     results = run_scraper()
+    expected = len(ROUTES) * len(HORIZONS)
 
     if not results:
+        _write_health([], {}, [], "failed")
         print("\nAucun resultat. Le scraping a echoue.")
         sys.exit(1)
+
+    coverage = len(results) / expected if expected else 0
 
     # 2. Analyser
     print("\n" + "=" * 50)
@@ -79,22 +107,21 @@ def main():
             "search_label": search_label,
         }
 
-    # 4. Regenerer data.js
+    # 4. Coverage gate — bloquer la publication si couverture insuffisante
+    if coverage < MIN_COVERAGE_RATIO:
+        health = _write_health(results, by_dest, deals, "degraded")
+        print(f"\nCouverture insuffisante : {len(results)}/{expected} "
+              f"({health['coverage_pct']}% < {int(MIN_COVERAGE_RATIO*100)}%)")
+        print("Publication bloquee. ci_health.json ecrit avec status=degraded.")
+        sys.exit(1)
+
+    # 5. Regenerer data.js (seulement si couverture suffisante)
     generate_data_js(best_offers_current)
 
-    # 5. Ecrire ci_health.json (visible sur GitHub Pages)
-    prices = [r.get("price_google", 0) for r in results]
-    health = {
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%SZ"),
-        "status": "ok",
-        "routes_scraped": len(results),
-        "destinations": len(by_dest),
-        "deals_detected": len(deals) if deals else 0,
-        "min_price": min(prices) if prices else None,
-    }
-    with open(CI_HEALTH_PATH, "w", encoding="utf-8") as f:
-        json.dump(health, f, ensure_ascii=False, indent=2)
-    print(f"ci_health.json ecrit ({health['routes_scraped']} routes)")
+    # 6. Ecrire ci_health.json
+    health = _write_health(results, by_dest, deals, "ok")
+    print(f"ci_health.json ecrit ({health['routes_scraped']}/{health['routes_expected']} routes, "
+          f"{health['coverage_pct']}%)")
 
     print("\nPipeline CI termine.")
 
