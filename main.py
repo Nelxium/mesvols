@@ -189,6 +189,7 @@ def generate_data_js(best_offers_current=None):
             "airline_url": airline_url,
             "deal_id": deal_id,
             "reserve_url": reserve_url,
+            "final_domain": cap.get("final_domain", "") if cap and cap.get("success") else "",
         }
         flights.append(entry)
 
@@ -310,6 +311,7 @@ def main():
             "google_url": google_url,
             "deal_id": deal_id,
             "reserve_url": reserve_url,
+            "final_domain": cap.get("final_domain", "") if cap and cap.get("success") else "",
         }
 
         key = (r["origin"], r["destination"], r["depart"], r["retour"])
