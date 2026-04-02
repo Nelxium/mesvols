@@ -1,12 +1,17 @@
-name: POC Scraping Google Flights
+name: MesVols - Mise a jour automatique
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"  # Toutes les 6 heures
+
+permissions:
+  contents: write
 
 jobs:
-  scrape-test:
+  update:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -22,13 +27,20 @@ jobs:
         with:
           chrome-version: stable
 
-      - name: Verify Chrome
-        run: |
-          google-chrome --version
-          which google-chrome
-
       - name: Install dependencies
         run: pip install selenium webdriver-manager
 
-      - name: Run POC scraping test
-        run: python scrape_poc.py
+      - name: Run scraping pipeline
+        run: python main_ci.py
+
+      - name: Publish to docs/
+        run: python publish.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data.js
+          git diff --cached --quiet && echo "No changes to push" && exit 0
+          git commit -m "update data"
+          git push
