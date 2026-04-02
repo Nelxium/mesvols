@@ -7,6 +7,7 @@ import csv
 import json
 import os
 from collections import defaultdict
+from datetime import datetime
 
 from scraper import run_scraper
 from analyzer import find_deals, parse_stops, compute_score
@@ -208,6 +209,42 @@ def generate_data_js(best_offers_current=None):
     print(f"data.js regenere avec {len(flights)} vols.")
 
 
+HEALTH_PATH = os.path.join(os.path.dirname(__file__), "health.json")
+
+
+def _write_health(cycle_report, candidates_total):
+    """Ecrit health.json apres chaque cycle."""
+    health = {
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "capture": {
+            "candidates_total": candidates_total,
+            "eligible_total": 0,
+            "planned_total": 0,
+            "attempted_total": 0,
+            "success_total": 0,
+            "failed_total": 0,
+            "skipped_fresh_total": 0,
+            "skipped_backoff_total": 0,
+            "consecutive_fail_stop_triggered": False,
+        },
+        "errors_by_code": {},
+        "attempts": [],
+    }
+    if cycle_report:
+        health["capture"].update({
+            k: cycle_report[k] for k in health["capture"] if k in cycle_report
+        })
+        health["errors_by_code"] = cycle_report.get("errors_by_code", {})
+        health["attempts"] = cycle_report.get("attempts", [])
+
+    try:
+        with open(HEALTH_PATH, "w", encoding="utf-8") as f:
+            json.dump(health, f, ensure_ascii=False, indent=2)
+        print(f"health.json ecrit ({health['capture']['attempted_total']} tentatives)")
+    except Exception as e:
+        print(f"Erreur ecriture health.json: {e}")
+
+
 def main():
     # 1. Scraper les prix actuels
     results = run_scraper()
@@ -296,12 +333,16 @@ def main():
             seen.add(key)
             candidates.append(d)
 
+    cycle_report = None
     if candidates:
         print(f"\n{len(candidates)} candidat(s) a la capture ({len(by_dest)} best_offer + {len(notifiable)} deal(s) >= 30%)")
-        resolve_deals(candidates, get_airline_code)
+        _, cycle_report = resolve_deals(candidates, get_airline_code)
 
     # 4. Regenerer data.js (inclut deal_id + reserve_url si disponibles)
     generate_data_js(best_offers_current)
+
+    # 4b. Ecrire health.json
+    _write_health(cycle_report, len(candidates))
 
     # 5. Envoyer une alerte si aubaine(s)
     if deals:

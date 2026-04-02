@@ -266,12 +266,31 @@ def _find_booking_offers(driver):
 def capture_booking_url(origin, dest, depart_str, retour_str):
     """
     Parcourt le flow complet Google Flights et capture l'URL de reservation.
-    Retourne {success, final_url, final_domain, partner_clicked, error}.
+    Retourne un dict avec succes/erreur + observabilite par etape.
     """
+    t0 = time.time()
     result = {
         "success": False, "final_url": "", "final_domain": "",
         "partner_clicked": "", "error": "",
+        # Observabilite
+        "stage": "INIT",
+        "error_code": "",
+        "error_detail": "",
+        "started_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "finished_at": "",
+        "duration_ms": 0,
     }
+
+    def _finish(success=False, stage=None, error_code="", error_detail=""):
+        if stage:
+            result["stage"] = stage
+        if error_code:
+            result["error_code"] = error_code
+            result["error_detail"] = error_detail or result.get("error", "")
+        result["success"] = success
+        result["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        result["duration_ms"] = int((time.time() - t0) * 1000)
+        return result
 
     depart = datetime.strptime(depart_str, "%Y-%m-%d")
     retour = datetime.strptime(retour_str, "%Y-%m-%d")
@@ -291,27 +310,33 @@ def capture_booking_url(origin, dest, depart_str, retour_str):
                 driver.get(url)
                 time.sleep(6)
         _dismiss_consent(driver)
+        result["stage"] = "PAGE_LOADED"
 
         # Etape 1-2 : Selection vol aller
         url_before = driver.current_url
         if not _click_first_flight(driver):
             result["error"] = "Aucun vol aller"
-            return result
+            return _finish(stage="PAGE_LOADED", error_code="OUTBOUND_NOT_FOUND")
         if driver.current_url == url_before:
             _try_select_button(driver)
+        result["stage"] = "OUTBOUND_SELECTED"
 
         # Etape 3-4 : Selection vol retour
         url_before = driver.current_url
         if _click_first_flight(driver):
             if driver.current_url == url_before:
                 _try_select_button(driver)
+            result["stage"] = "RETURN_SELECTED"
+        else:
+            result["stage"] = "RETURN_SELECTED"  # peut-etre deja sur l'ecran offres
         time.sleep(3)
 
         # Etape 5 : Offres de reservation
         offers = _find_booking_offers(driver)
         if not offers:
             result["error"] = "Aucune offre partenaire"
-            return result
+            return _finish(stage="RETURN_SELECTED", error_code="NO_PARTNER_OFFERS")
+        result["stage"] = "OFFERS_FOUND"
 
         # Etape 6 : Clic sur la premiere offre
         offer = offers[0]
@@ -322,7 +347,13 @@ def capture_booking_url(origin, dest, depart_str, retour_str):
         try:
             offer["element"].click()
         except Exception:
-            driver.execute_script("arguments[0].click();", offer["element"])
+            try:
+                driver.execute_script("arguments[0].click();", offer["element"])
+            except Exception as click_err:
+                result["error"] = str(click_err)
+                return _finish(stage="OFFERS_FOUND", error_code="PARTNER_CLICK_FAILED",
+                               error_detail=str(click_err))
+        result["stage"] = "PARTNER_CLICKED"
         time.sleep(10)
 
         # Verifier nouvel onglet
@@ -335,20 +366,20 @@ def capture_booking_url(origin, dest, depart_str, retour_str):
         if not _is_google(current_url) and "google" not in current_url.lower():
             result["final_url"] = current_url
             result["final_domain"] = _get_domain(current_url)
-            result["success"] = True
+            return _finish(success=True, stage="EXTERNAL_REDIRECT")
         else:
             result["error"] = "Pas de redirection hors Google"
+            return _finish(stage="PARTNER_CLICKED", error_code="NO_EXTERNAL_REDIRECT")
 
     except Exception as e:
         result["error"] = str(e)
+        return _finish(error_code="WEBDRIVER_ERROR", error_detail=str(e))
     finally:
         if driver:
             try:
                 driver.quit()
             except Exception:
                 pass
-
-    return result
 
 
 # ── Resolveur de deals (capture incrementale) ────────────────────────────
@@ -366,8 +397,25 @@ def resolve_deals(deals_list, get_airline_code_fn=None):
 
     Max MAX_CAPTURES_PER_CYCLE par cycle.
     Arret anticipe si 3 echecs consecutifs dans le meme cycle.
+
+    Retourne (stored_deals, cycle_report).
     """
     stored = load_deals()
+
+    # Compteurs pour le rapport
+    report = {
+        "candidates_total": len(deals_list),
+        "eligible_total": 0,
+        "planned_total": 0,
+        "attempted_total": 0,
+        "success_total": 0,
+        "failed_total": 0,
+        "skipped_fresh_total": 0,
+        "skipped_backoff_total": 0,
+        "consecutive_fail_stop_triggered": False,
+        "errors_by_code": {},
+        "attempts": [],
+    }
 
     # Phase 1 : scorer chaque deal
     scored = []  # [(priority, deal_id, deal, offer_hash, airline_code)]
@@ -405,8 +453,8 @@ def resolve_deals(deals_list, get_airline_code_fn=None):
 
         # Hash identique — verifier fraicheur pour recapture (75 min)
         if was_success and age is not None and age < RECAPTURE_MINUTES:
-            # Frais + meme offre → skip
             print(f"  [Capture] {deal_id}: frais ({age:.0f} min), skip")
+            report["skipped_fresh_total"] += 1
             continue
 
         # P30 : echec precedent — verifier backoff
@@ -415,6 +463,7 @@ def resolve_deals(deals_list, get_airline_code_fn=None):
             fail_age = _age_minutes(last_fail_at)
             if fail_age is not None and fail_age < backoff:
                 print(f"  [Capture] {deal_id}: backoff ({backoff:.0f} min, reste {backoff - fail_age:.0f}), skip")
+                report["skipped_backoff_total"] += 1
                 continue
             scored.append((30, deal_id, deal, offer_hash, airline_code))
             continue
@@ -427,13 +476,16 @@ def resolve_deals(deals_list, get_airline_code_fn=None):
         # Cas residuel (pas de capture, pas d'echec) → P100
         scored.append((100, deal_id, deal, offer_hash, airline_code))
 
+    report["eligible_total"] = len(scored)
+
     # Phase 2 : trier par priorite et capturer
     scored.sort(key=lambda x: -x[0])
     to_capture = scored[:MAX_CAPTURES_PER_CYCLE]
+    report["planned_total"] = len(to_capture)
 
     if not to_capture:
         print(f"  [Capture] Aucune capture necessaire")
-        return stored
+        return stored, report
 
     print(f"  [Capture] {len(to_capture)} capture(s) planifiee(s) sur {len(scored)} eligibles")
     consecutive_fails = 0
@@ -441,6 +493,7 @@ def resolve_deals(deals_list, get_airline_code_fn=None):
     for priority, deal_id, deal, offer_hash, airline_code in to_capture:
         if consecutive_fails >= 3:
             print(f"  [Capture] 3 echecs consecutifs — arret du cycle (Google bloque ?)")
+            report["consecutive_fail_stop_triggered"] = True
             break
 
         origin = deal.get("origin", "")
@@ -451,11 +504,36 @@ def resolve_deals(deals_list, get_airline_code_fn=None):
 
         print(f"  [Capture] {deal_id} (P{priority}): demarrage...")
         cap = capture_booking_url(origin, dest, depart, retour)
+        report["attempted_total"] += 1
 
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         existing = stored.get(deal_id, {})
+
+        # Observabilite enrichie pour deals.json
+        obs_fields = {
+            "last_stage": cap["stage"],
+            "last_error_code": cap["error_code"],
+            "last_error_detail": cap["error_detail"],
+            "last_duration_ms": cap["duration_ms"],
+            "last_attempt_at": now_str,
+        }
+
+        # Entree du rapport par tentative
+        attempt_entry = {
+            "deal_id": deal_id,
+            "destination": dest,
+            "priority": priority,
+            "success": cap["success"],
+            "stage": cap["stage"],
+            "error_code": cap["error_code"],
+            "final_domain": cap["final_domain"],
+            "duration_ms": cap["duration_ms"],
+            "last_attempt_at": now_str,
+        }
 
         if cap["success"]:
             consecutive_fails = 0
+            report["success_total"] += 1
             stored[deal_id] = {
                 "deal_id": deal_id,
                 "offer_hash": offer_hash,
@@ -469,14 +547,19 @@ def resolve_deals(deals_list, get_airline_code_fn=None):
                 "partner_clicked": cap["partner_clicked"],
                 "final_url": cap["final_url"],
                 "final_domain": cap["final_domain"],
-                "captured_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "captured_at": now_str,
                 "success": True,
                 "fail_count": 0,
                 "last_fail_at": "",
+                "last_success_at": now_str,
+                **obs_fields,
             }
             print(f"  [Capture] {deal_id}: OK -> {cap['final_domain']}")
         else:
             consecutive_fails += 1
+            report["failed_total"] += 1
+            ec = cap["error_code"] or "UNKNOWN_ERROR"
+            report["errors_by_code"][ec] = report["errors_by_code"].get(ec, 0) + 1
             stored[deal_id] = {
                 **existing,
                 "deal_id": deal_id,
@@ -490,9 +573,13 @@ def resolve_deals(deals_list, get_airline_code_fn=None):
                 "airline_code": airline_code,
                 "success": False,
                 "fail_count": existing.get("fail_count", 0) + 1,
-                "last_fail_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "last_fail_at": now_str,
+                "last_failure_at": now_str,
+                **obs_fields,
             }
-            print(f"  [Capture] {deal_id}: ECHEC -> {cap['error']}")
+            print(f"  [Capture] {deal_id}: ECHEC -> {cap['error_code']} ({cap['stage']})")
+
+        report["attempts"].append(attempt_entry)
 
     save_deals(stored)
-    return stored
+    return stored, report
