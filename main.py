@@ -361,4 +361,25 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as exc:
+        # Alerte Discord en cas de crash complet
+        try:
+            from urllib.request import Request, urlopen
+            from config import DISCORD_WEBHOOK_URL
+            if DISCORD_WEBHOOK_URL:
+                payload = json.dumps({
+                    "embeds": [{
+                        "title": "MesVols - CRASH",
+                        "description": f"**{type(exc).__name__}**: {exc}",
+                        "color": 0xe11d48,
+                        "footer": {"text": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+                    }]
+                }).encode("utf-8")
+                req = Request(DISCORD_WEBHOOK_URL, data=payload, method="POST")
+                req.add_header("Content-Type", "application/json")
+                urlopen(req)
+        except Exception as discord_err:
+            print(f"Erreur envoi alerte Discord: {discord_err}")
+        raise
