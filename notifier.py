@@ -9,7 +9,7 @@ from email.mime.text import MIMEText
 from urllib.request import Request, urlopen
 
 from config import GMAIL_ADDRESS, GMAIL_APP_PASSWORD, ALERT_RECIPIENTS, DISCORD_WEBHOOK_URL
-from links import build_skyscanner_url
+from links import build_search_link
 
 
 def send_deal_alert(deals):
@@ -68,15 +68,14 @@ def send_deal_alert(deals):
         score = deal.get("score", 0)
         score_stars = "&#9733;" * score + "&#9734;" * (5 - score) if score else ""
 
-        # Construire l'URL de reservation (Skyscanner)
+        # Construire l'URL de recherche (United / KAYAK)
         depart = deal.get("depart", "")
         retour = deal.get("retour", "")
-        booking_url = build_skyscanner_url({
-            "origin": deal.get("origin", "YUL"),
-            "destination": deal.get("destination", ""),
-            "depart_date": depart,
-            "return_date": retour,
-        })
+        airline_code = deal.get("airline_code", "")
+        search_url, search_label = build_search_link(
+            deal.get("origin", "YUL"), deal.get("destination", ""),
+            depart, retour, airline_code,
+        )
 
         # Badge escales
         if is_direct:
@@ -147,10 +146,10 @@ def send_deal_alert(deals):
         <td style="padding:14px 8px;background:{row_bg};text-align:center;color:#d97706;font-size:13px;white-space:nowrap;">{score_stars}</td>
         <td style="padding:14px 12px;background:{row_bg};color:#a0a5b8;font-size:12px;">{deal['airline']}</td>
         <td style="padding:14px 12px;background:{row_bg};text-align:center;border-radius:0 8px 8px 0;">
-          <a href="{booking_url}" target="_blank"
+          <a href="{search_url}" target="_blank"
              style="display:inline-block;background:#e85d24;color:#fff;padding:8px 18px;
                     border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;
-                    letter-spacing:0.3px;">R&eacute;server &rarr;</a>
+                    letter-spacing:0.3px;">{search_label} &rarr;</a>
         </td>
       </tr>
         """
@@ -233,15 +232,14 @@ def send_discord_alert(deals):
         else:
             color = 0xe85d24
 
-        # URL de reservation Skyscanner
+        # URL de recherche (United / KAYAK)
         depart = deal.get("depart", "")
         retour = deal.get("retour", "")
-        booking_url = build_skyscanner_url({
-            "origin": deal.get("origin", "YUL"),
-            "destination": deal.get("destination", ""),
-            "depart_date": depart,
-            "return_date": retour,
-        })
+        airline_code = deal.get("airline_code", "")
+        search_url, search_label = build_search_link(
+            deal.get("origin", "YUL"), deal.get("destination", ""),
+            depart, retour, airline_code,
+        )
 
         # Badges texte
         tags = []
@@ -259,7 +257,7 @@ def send_discord_alert(deals):
         )
         if tags:
             description += " \u00b7 ".join(tags) + "\n"
-        description += f"\n[\U0001f4b3 Reserver sur Skyscanner]({booking_url})"
+        description += f"\n[\U0001f4b3 {search_label}]({search_url})"
 
         embeds.append({
             "title": deal["route"],
