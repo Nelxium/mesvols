@@ -255,7 +255,7 @@ function render(){
     const e=bd[dest],p=e.map(r=>r.price),avg=Math.round(p.reduce((a,b)=>a+b,0)/p.length),best=bof(dest),lp=best.price,mx=Math.max(...p);
     const diff=avg?Math.round(((lp-avg)/avg)*100):0;
     const fl=F[dest]||'🌍',ci=C[dest]||dest,img=IMG[dest]||IMG.CDG;
-    const skyUrl=best.reserve_url||best.skyscanner_url||'',gUrl=best.google_url||best.booking_url||'';
+    const skyUrl=best.reserve_url||best.skyscanner_url||'';
     const vc=diff<=-15?'cv-down':diff>=5?'cv-up':'cv-flat';
     const arrow=diff<=0?'↓':'↑';
 
@@ -296,8 +296,7 @@ function render(){
         <div class="card-spark">${spark}</div>
         <div style="font-size:.65rem;color:var(--muted);margin-bottom:10px">${best.price_skyscanner?`<span style="margin-right:8px">Google: <b>${best.price_google}$</b></span><span>Skyscanner: <b>${best.price_skyscanner}$</b></span>`:`Prix via ${best.best_source||'Google Flights'}`}${best.best_source&&best.price_skyscanner?` — <span style="color:var(--teal);font-weight:600">Meilleur: ${best.best_source}</span>`:''}</div>
         ${best.reserve_url?'':`<div style="font-size:.58rem;color:var(--muted);margin-bottom:6px">Prix observé sur Google Flights — peut différer au clic</div>`}
-        <div style="display:flex;gap:8px"><a href="${skyUrl}" target="_blank" class="card-cta" style="flex:1">${best.reserve_url?'Réserver →':'Voir sur Skyscanner →'}</a>
-        <a href="${gUrl}" target="_blank" class="card-cta2" style="flex:1">Google Flights →</a></div>`;
+        <a href="${skyUrl}" target="_blank" class="card-cta">${best.reserve_url?'Réserver →':'Voir sur Skyscanner →'}</a>`;
     }
 
     return`<div class="card">
