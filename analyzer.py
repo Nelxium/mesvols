@@ -15,13 +15,23 @@ MIN_DATAPOINTS = 3  # Minimum de prix historiques avant de comparer
 
 
 def parse_stops(stops_str):
-    """Retourne le nombre d'escales a partir du champ stops."""
-    if not stops_str or stops_str == "Direct":
+    """Retourne le nombre d'escales a partir du champ stops.
+
+    Regle unique : meme logique que stopT() du frontend.
+    Reconnait "Direct", "direct", "sans escale", "nonstop", "0".
+    Fallback = 1 avec avertissement (jamais silencieux).
+    """
+    if not stops_str:
         return 0
-    try:
-        return int(stops_str.split()[0])
-    except (ValueError, IndexError):
-        return 1
+    s = stops_str.strip().lower()
+    if s in ("direct", "sans escale", "nonstop", "non-stop", "0"):
+        return 0
+    import re
+    m = re.match(r"^(\d+)", s)
+    if m:
+        return int(m.group(1))
+    print(f"  WARNING parse_stops: format inconnu '{stops_str}', fallback=1")
+    return 1
 
 
 ERROR_FARE_THRESHOLD = 0.60  # Rabais >= 60% = erreur de prix possible
