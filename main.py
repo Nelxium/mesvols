@@ -133,11 +133,20 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
     route_min = {r: min(p) for r, p in route_prices.items()}
 
     # Baseline historique sans le cycle courant (pour BEST_OFFERS)
-    # Toutes les lignes d'un cycle partagent le meme run_ts (scraper.py),
-    # donc exclure last_date exclut tout le cycle courant.
+    # Identifier le dernier cycle : toutes les lignes consecutives en fin de CSV
+    # dont le date-prefix (YYYY-MM-DD HH) correspond au dernier timestamp.
+    # Robuste meme si le cycle a des timestamps per-row (legacy data).
+    last_hour = last_date[:13] if len(last_date) >= 13 else last_date
+    last_cycle_dates = set()
+    for r in reversed(raw_rows):
+        if r["date"][:13] == last_hour:
+            last_cycle_dates.add(r["date"])
+        else:
+            break
+
     route_prices_prior = defaultdict(list)
     for r in raw_rows:
-        if r["date"] != last_date:
+        if r["date"] not in last_cycle_dates:
             route = r["route"]
             best_price = min(r["price_google"], r["price_skyscanner"]) \
                 if r["price_skyscanner"] else r["price_google"]
@@ -442,6 +451,10 @@ def main():
             by_dest[dest] = r
 
     # Construire best_offers_current pour data.js (source de verite unique)
+    # screenshot_map et reval_map sont remplis plus tard par revalidate_and_capture(),
+    # mais doivent exister ici pour la construction initiale de best_offers_current.
+    screenshot_map = {}
+    reval_map = {}
     captured_deals = load_deals()
     best_offers_current = {}
 
@@ -520,7 +533,22 @@ def main():
         _, cycle_report = resolve_deals(candidates, get_airline_code)
 
     # 4. Revalidation + screenshot des deals >= 30% (juste avant publication)
-    screenshot_map, reval_map = revalidate_and_capture(deals)
+    _ss, _rv = revalidate_and_capture(deals)
+    screenshot_map.update(_ss)
+    reval_map.update(_rv)
+
+    # Mettre a jour best_offers_current avec les resultats de revalidation
+    for dest, info in best_offers_current.items():
+        r = by_dest.get(dest, {})
+        key = (r.get("origin", ""), dest, info.get("depart", ""), info.get("retour", ""))
+        ss = screenshot_map.get(key, "")
+        if ss:
+            info["screenshot_url"] = ss
+        rv = reval_map.get(key)
+        if rv:
+            info["revalidated_price"] = rv.get("revalidated_price")
+            info["revalidated_at"] = rv.get("revalidated_at", "")
+            info["revalidation_status"] = rv.get("revalidation_status", "")
 
     # Filtrer les deals expires de la liste notifiable
     expired_keys = {k for k, v in reval_map.items()
