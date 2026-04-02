@@ -3,7 +3,11 @@ name: MesVols - Mise a jour automatique
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */6 * * *"  # Toutes les 6 heures
+    - cron: "7,37 * * * *"  # Toutes les 30 min
+
+concurrency:
+  group: mesvols-prod
+  cancel-in-progress: false
 
 permissions:
   contents: write
