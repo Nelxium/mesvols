@@ -13,7 +13,7 @@ from scraper import run_scraper
 from analyzer import find_deals, parse_stops, compute_score
 from notifier import send_deal_alert
 from links import build_skyscanner_url
-from booking_capture import make_deal_id, load_deals, resolve_deals
+from booking_capture import make_deal_id, load_deals, is_fresh, resolve_deals
 from config import BASE_URL
 
 CSV_PATH = os.path.join(os.path.dirname(__file__), "prix_vols.csv")
@@ -167,7 +167,8 @@ def generate_data_js(best_offers_current=None):
         # deal_id + reserve_url si capture disponible
         deal_id = make_deal_id(origin, dest, depart, retour, airline_code, r["airline"])
         cap = captured_deals.get(deal_id)
-        reserve_url = BASE_URL + "/r/" + deal_id if cap and cap.get("success") else ""
+        cap_live = cap and cap.get("success") and is_fresh(cap)
+        reserve_url = BASE_URL + "/r/" + deal_id if cap_live else ""
 
         entry = {
             "date": r["date"],
@@ -189,7 +190,7 @@ def generate_data_js(best_offers_current=None):
             "airline_url": airline_url,
             "deal_id": deal_id,
             "reserve_url": reserve_url,
-            "final_domain": cap.get("final_domain", "") if cap and cap.get("success") else "",
+            "final_domain": cap.get("final_domain", "") if cap_live else "",
         }
         flights.append(entry)
 
@@ -287,7 +288,8 @@ def main():
         deal_id = make_deal_id(r["origin"], dest, r["depart"], r["retour"],
                                airline_code, r.get("airline", ""))
         cap = captured_deals.get(deal_id)
-        reserve_url = BASE_URL + "/r/" + deal_id if cap and cap.get("success") else ""
+        cap_live = cap and cap.get("success") and is_fresh(cap)
+        reserve_url = BASE_URL + "/r/" + deal_id if cap_live else ""
         sky_url = build_skyscanner_url({
             "origin": r["origin"], "destination": dest,
             "depart_date": r["depart"], "return_date": r["retour"],
@@ -311,7 +313,7 @@ def main():
             "google_url": google_url,
             "deal_id": deal_id,
             "reserve_url": reserve_url,
-            "final_domain": cap.get("final_domain", "") if cap and cap.get("success") else "",
+            "final_domain": cap.get("final_domain", "") if cap_live else "",
         }
 
         key = (r["origin"], r["destination"], r["depart"], r["retour"])
