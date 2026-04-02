@@ -76,8 +76,10 @@ def get_airline_code(airline_name):
     return ""
 
 
-def generate_data_js():
-    """Regenere data.js a partir de prix_vols.csv (supporte ancien et nouveau format)."""
+def generate_data_js(best_offers_current=None):
+    """Regenere data.js a partir de prix_vols.csv (supporte ancien et nouveau format).
+    best_offers_current : dict {dest: {...}} calcule depuis les resultats du cycle courant.
+    Si fourni, utilise comme BEST_OFFERS au lieu de recalculer depuis le CSV."""
     raw_rows = []
     last_date = ""
     route_prices = defaultdict(list)
@@ -189,32 +191,8 @@ def generate_data_js():
         }
         flights.append(entry)
 
-    # Calculer best_offer par destination (meilleur prix des 3 horizons du dernier scrape)
-    best_offers = {}
-    if flights:
-        by_dest = defaultdict(list)
-        for f in flights:
-            if f["date"] == last_date:
-                by_dest[f["destination"]].append(f)
-
-        for dest, dest_entries in by_dest.items():
-            best = min(dest_entries, key=lambda e: e["price"])
-            best_offers[dest] = {
-                "price": best["price"],
-                "price_google": best["price_google"],
-                "price_skyscanner": best["price_skyscanner"],
-                "best_source": best["best_source"],
-                "depart": best["depart"],
-                "retour": best["retour"],
-                "airline": best["airline"],
-                "airline_code": get_airline_code(best["airline"]),
-                "stops": best["stops"],
-                "score": best["score"],
-                "skyscanner_url": best["skyscanner_url"],
-                "google_url": best["google_url"],
-                "deal_id": best.get("deal_id", ""),
-                "reserve_url": best.get("reserve_url", ""),
-            }
+    # BEST_OFFERS : utiliser le calcul du cycle courant si fourni
+    best_offers = best_offers_current if best_offers_current else {}
 
     entries = ",\n  ".join(json.dumps(f, ensure_ascii=False) for f in flights)
     bo_json = json.dumps(best_offers, ensure_ascii=False)
@@ -260,9 +238,43 @@ def main():
         if dest not in by_dest or price < by_dest[dest].get("price_google", 0):
             by_dest[dest] = r
 
+    # Construire best_offers_current pour data.js (source de verite unique)
+    captured_deals = load_deals()
+    best_offers_current = {}
+
     for dest, r in by_dest.items():
         stops_text = r.get("escales", "")
         num_stops = parse_stops(stops_text)
+        airline_code = get_airline_code(r.get("airline", ""))
+        deal_id = make_deal_id(r["origin"], dest, r["depart"], r["retour"],
+                               airline_code, r.get("airline", ""))
+        cap = captured_deals.get(deal_id)
+        reserve_url = BASE_URL + "/r/" + deal_id if cap and cap.get("success") else ""
+        sky_url = build_skyscanner_url({
+            "origin": r["origin"], "destination": dest,
+            "depart_date": r["depart"], "return_date": r["retour"],
+        })
+        google_url = (f"https://www.google.com/travel/flights"
+                      f"?q=flights+from+{r['origin']}+to+{dest}"
+                      f"+on+{r['depart']}+return+{r['retour']}")
+
+        best_offers_current[dest] = {
+            "price": r["price_google"],
+            "price_google": r["price_google"],
+            "price_skyscanner": None,
+            "best_source": "Google",
+            "depart": r["depart"],
+            "retour": r["retour"],
+            "airline": r.get("airline", ""),
+            "airline_code": airline_code,
+            "stops": stops_text,
+            "score": compute_score(r["price_google"], 0, num_stops, None),
+            "skyscanner_url": sky_url,
+            "google_url": google_url,
+            "deal_id": deal_id,
+            "reserve_url": reserve_url,
+        }
+
         key = (r["origin"], r["destination"], r["depart"], r["retour"])
         seen.add(key)
         candidates.append({
@@ -289,7 +301,7 @@ def main():
         resolve_deals(candidates, get_airline_code)
 
     # 4. Regenerer data.js (inclut deal_id + reserve_url si disponibles)
-    generate_data_js()
+    generate_data_js(best_offers_current)
 
     # 5. Envoyer une alerte si aubaine(s)
     if deals:
