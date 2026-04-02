@@ -286,9 +286,12 @@ def parse_flight_results(driver):
 HORIZONS = [30, 60, 90]  # Jours dans le futur a scraper
 
 
-def scrape_route(driver, origin, destination, route_name):
-    """Scrape le prix le moins cher pour une route sur plusieurs horizons (30/60/90 jours)."""
+def scrape_route(driver, origin, destination, route_name, run_ts=None):
+    """Scrape le prix le moins cher pour une route sur plusieurs horizons (30/60/90 jours).
+    run_ts: timestamp unique du cycle (partage entre toutes les routes)."""
     all_results = []
+    if run_ts is None:
+        run_ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%MZ")
 
     MTL = ZoneInfo("America/Montreal")
     for days_ahead in HORIZONS:
@@ -326,7 +329,7 @@ def scrape_route(driver, origin, destination, route_name):
                            f"+on+{d_str}+return+{r_str}")
 
             all_results.append({
-                "date": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%MZ"),
+                "date": run_ts,
                 "route": route_name,
                 "origin": origin,
                 "destination": destination,
@@ -380,6 +383,7 @@ def run_scraper():
     print(f"{len(ROUTES)} routes a verifier")
     print("=" * 60)
 
+    run_ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%MZ")
     driver = get_driver()
     all_results = []
     errors = []
@@ -387,7 +391,7 @@ def run_scraper():
     try:
         for origin, destination, name in ROUTES:
             try:
-                results = scrape_route(driver, origin, destination, name)
+                results = scrape_route(driver, origin, destination, name, run_ts)
                 all_results.extend(results)
             except Exception as e:
                 print(f"    -> ERREUR CRITIQUE {name}: {e}")

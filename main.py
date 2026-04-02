@@ -133,7 +133,8 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
     route_min = {r: min(p) for r, p in route_prices.items()}
 
     # Baseline historique sans le cycle courant (pour BEST_OFFERS)
-    # Exclure les lignes du dernier timestamp pour eviter l'auto-contamination
+    # Toutes les lignes d'un cycle partagent le meme run_ts (scraper.py),
+    # donc exclure last_date exclut tout le cycle courant.
     route_prices_prior = defaultdict(list)
     for r in raw_rows:
         if r["date"] != last_date:
