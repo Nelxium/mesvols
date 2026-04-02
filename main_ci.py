@@ -88,6 +88,7 @@ def main():
             r["origin"], dest, r["depart"], r["retour"], airline_code)
 
         best_offers_current[dest] = {
+            "date": r.get("date", ""),
             "price": r["price_google"],
             "price_google": r["price_google"],
             "price_skyscanner": None,
