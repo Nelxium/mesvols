@@ -12,7 +12,7 @@ from datetime import datetime
 from scraper import run_scraper
 from analyzer import find_deals, parse_stops, compute_score
 from notifier import send_deal_alert
-from links import build_skyscanner_url
+from links import build_skyscanner_url, build_search_link
 from booking_capture import make_deal_id, load_deals, is_fresh, resolve_deals
 from config import BASE_URL, ENABLE_DIRECT_BOOKING
 
@@ -169,6 +169,7 @@ def generate_data_js(best_offers_current=None):
         cap = captured_deals.get(deal_id)
         cap_live = ENABLE_DIRECT_BOOKING and cap and cap.get("success") and is_fresh(cap)
         reserve_url = BASE_URL + "/r/" + deal_id if cap_live else ""
+        search_url, search_label = build_search_link(origin, dest, depart, retour, airline_code)
 
         entry = {
             "date": r["date"],
@@ -191,6 +192,8 @@ def generate_data_js(best_offers_current=None):
             "deal_id": deal_id,
             "reserve_url": reserve_url,
             "final_domain": cap.get("final_domain", "") if cap_live else "",
+            "search_url": search_url,
+            "search_label": search_label,
         }
         flights.append(entry)
 
@@ -297,6 +300,8 @@ def main():
         google_url = (f"https://www.google.com/travel/flights"
                       f"?q=flights+from+{r['origin']}+to+{dest}"
                       f"+on+{r['depart']}+return+{r['retour']}")
+        search_url, search_label = build_search_link(
+            r["origin"], dest, r["depart"], r["retour"], airline_code)
 
         best_offers_current[dest] = {
             "price": r["price_google"],
@@ -314,6 +319,8 @@ def main():
             "deal_id": deal_id,
             "reserve_url": reserve_url,
             "final_domain": cap.get("final_domain", "") if cap_live else "",
+            "search_url": search_url,
+            "search_label": search_label,
         }
 
         key = (r["origin"], r["destination"], r["depart"], r["retour"])
