@@ -138,7 +138,7 @@ def find_deals(current_results):
         price = min(price_g, price_s) if price_s else price_g
         avg = averages.get(route)
         hist_min = minimums.get(route)
-        stops_str = result.get("stops", "")
+        stops_str = result.get("escales") or result.get("stops", "")
         num_stops = parse_stops(stops_str)
         stops_label = "Direct" if num_stops == 0 else f"{num_stops} escale(s)"
 

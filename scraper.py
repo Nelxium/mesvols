@@ -215,8 +215,10 @@ def normalize_airline(raw):
     if not raw or raw == "Inconnue":
         return "Inconnue"
 
-    # Rejeter les codes de route interpretes comme airline
+    # Rejeter les codes de route et labels parasites Google Flights
     if _ROUTE_CODE_RE.match(raw.strip()):
+        return "Inconnue"
+    if "mission" in raw.lower():  # "Émissions hab.", "Émissions habituelles"
         return "Inconnue"
 
     # Chercher la compagnie connue qui apparait le plus tot dans le texte brut
@@ -323,6 +325,7 @@ def parse_flight_results(driver):
                         and not re.match(r"^\d", line) and ":" not in line
                         and "escale" not in line.lower() and "kg" not in line.lower()
                         and "min" not in line.lower() and "CO2" not in line
+                        and "mission" not in line.lower()
                         and not _ROUTE_CODE_RE.match(line)
                         and len(line) < 50):
                     airline = line

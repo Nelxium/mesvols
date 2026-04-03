@@ -112,6 +112,18 @@ def test_unknown_airline_not_in_list():
     assert normalize_airline("FlyBondi") == "FlyBondi"
 
 
+# --- Labels parasites Google Flights ---
+
+def test_emissions_hab():
+    """Émissions hab. (label Google Flights) -> Inconnue."""
+    assert normalize_airline("Émissions hab.") == "Inconnue"
+
+
+def test_emissions_habituelles():
+    """Émissions habituelles -> Inconnue."""
+    assert normalize_airline("Émissions habituelles") == "Inconnue"
+
+
 if __name__ == "__main__":
     tests = [f for f in dir() if f.startswith("test_")]
     passed = 0
