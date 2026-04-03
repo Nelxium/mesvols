@@ -302,17 +302,24 @@ def parse_flight_results(driver):
             if not aria:
                 continue
 
-            # Compagnie : "Vol avec Air Transat" ou "Vol avec United"
-            m = re.search(r"Vol avec ([^,\.]+)", aria)
+            # Compagnie : "Vol avec X" / "Vols avec X" / "Flights with X"
+            m = re.search(r"(?:Vols? avec|Flights? with)\s+([^,\.]+)", aria, re.IGNORECASE)
             if m:
                 airline = m.group(1).strip()
+            else:
+                # Second chance : chercher une compagnie connue dans l'aria-label
+                for known in KNOWN_AIRLINES:
+                    if known in aria:
+                        airline = known
+                        break
 
-            # Escales : "1 escale", "Sans escale", "direct"
-            if "sans escale" in aria.lower() or "direct" in aria.lower():
+            # Escales : "Sans escale" / "direct" / "nonstop" / "N escale" / "N stop"
+            aria_low = aria.lower()
+            if "sans escale" in aria_low or "direct" in aria_low or "nonstop" in aria_low:
                 stops = 0
                 stops_text = "Direct"
             else:
-                m2 = re.search(r"(\d+)\s*escale", aria.lower())
+                m2 = re.search(r"(\d+)\s*(?:escale|stop)", aria_low)
                 if m2:
                     stops = int(m2.group(1))
                     stops_text = f"{stops} escale(s)"

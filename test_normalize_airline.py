@@ -134,6 +134,32 @@ def test_aller_retour_capitalized():
     assert normalize_airline("Aller-retour") == "Inconnue"
 
 
+# --- Extraction aria-label (patterns FR + EN) ---
+
+def test_aria_label_french():
+    """Le regex aria-label matche 'Vol avec X'."""
+    import re
+    pattern = re.compile(r"(?:Vols? avec|Flights? with)\s+([^,\.]+)", re.IGNORECASE)
+    m = pattern.search("Vol avec JetBlue. Sans escale")
+    assert m and m.group(1).strip() == "JetBlue"
+
+
+def test_aria_label_english():
+    """Le regex aria-label matche 'Flights with X'."""
+    import re
+    pattern = re.compile(r"(?:Vols? avec|Flights? with)\s+([^,\.]+)", re.IGNORECASE)
+    m = pattern.search("Flights with United. Nonstop")
+    assert m and m.group(1).strip() == "United"
+
+
+def test_aria_label_plural_french():
+    """Le regex aria-label matche 'Vols avec X'."""
+    import re
+    pattern = re.compile(r"(?:Vols? avec|Flights? with)\s+([^,\.]+)", re.IGNORECASE)
+    m = pattern.search("Vols avec Air Canada, sans escale")
+    assert m and m.group(1).strip() == "Air Canada"
+
+
 if __name__ == "__main__":
     tests = [f for f in dir() if f.startswith("test_")]
     passed = 0
