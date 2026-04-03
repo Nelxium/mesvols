@@ -220,6 +220,9 @@ def normalize_airline(raw):
         return "Inconnue"
     if "mission" in raw.lower():  # "Émissions hab.", "Émissions habituelles"
         return "Inconnue"
+    low = raw.strip().lower()
+    if low in ("aller-retour", "aller", "retour", "round trip", "one way"):
+        return "Inconnue"
 
     # Chercher la compagnie connue qui apparait le plus tot dans le texte brut
     best_match = None
@@ -326,6 +329,8 @@ def parse_flight_results(driver):
                         and "escale" not in line.lower() and "kg" not in line.lower()
                         and "min" not in line.lower() and "CO2" not in line
                         and "mission" not in line.lower()
+                        and "aller" not in line.lower()
+                        and "retour" not in line.lower()
                         and not _ROUTE_CODE_RE.match(line)
                         and len(line) < 50):
                     airline = line

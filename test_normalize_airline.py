@@ -124,6 +124,16 @@ def test_emissions_habituelles():
     assert normalize_airline("Émissions habituelles") == "Inconnue"
 
 
+def test_aller_retour():
+    """aller-retour (label Google Flights) -> Inconnue."""
+    assert normalize_airline("aller-retour") == "Inconnue"
+
+
+def test_aller_retour_capitalized():
+    """Aller-retour -> Inconnue."""
+    assert normalize_airline("Aller-retour") == "Inconnue"
+
+
 if __name__ == "__main__":
     tests = [f for f in dir() if f.startswith("test_")]
     passed = 0
