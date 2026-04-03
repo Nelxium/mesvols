@@ -100,13 +100,16 @@ main{padding:58px 12px 24px}
 .ci span{font-weight:700}
 
 footer{text-align:center;padding:20px 12px;font-size:.6rem;color:var(--muted)}
+.signature{font-size:.5rem;color:var(--muted);font-weight:400;letter-spacing:.02em;opacity:.65;margin-left:8px;white-space:nowrap;display:inline-flex;align-items:baseline;gap:3px}
+.signature b{font-size:.95rem;font-weight:600;background:linear-gradient(90deg,#e85d24,#d97706,#059669,#0284c7,#7c3aed,#e11d48,#e85d24);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:rainbow 8s linear infinite;filter:drop-shadow(0 0 3px rgba(232,93,36,.25))}
+@keyframes rainbow{to{background-position:200% center}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
 <nav>
-  <a href="#" class="logo"><div class="logo-icon">✈</div>MesVols</a>
+  <a href="#" class="logo"><div class="logo-icon">✈</div>MesVols</a><span class="signature">Created by <b>Amaz05</b></span>
   <div class="nav-r"><span class="nav-time" id="upd"></span><span id="clock" style="margin-left:6px;font-variant-numeric:tabular-nums;font-size:.85rem;color:#e85d24;font-weight:600"></span><div class="live"><span class="dot"></span>Suivi actif</div></div>
 </nav>
 
