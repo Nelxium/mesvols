@@ -12,16 +12,16 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(250,248,245,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:10px 16px 8px;background:rgba(250,248,245,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
 .logo{font-family:'Fraunces',serif;font-size:1.1rem;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:6px;font-weight:700}
 .logo-icon{width:28px;height:28px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem}
-.nav-r{display:flex;gap:6px;align-items:center}
+.nav-r{display:flex;gap:6px;align-items:center;flex-basis:100%;justify-content:flex-end;margin-top:4px}
 .nav-time{font-size:.65rem;color:var(--muted)}
 .live{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;color:var(--teal);background:var(--teal-l);padding:4px 10px;border-radius:100px;font-weight:600}
 .dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-main{padding:58px 12px 24px}
+main{padding:76px 12px 24px}
 
 /* HERO — compact */
 .hero{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);border-radius:var(--r2);padding:20px 18px 16px;margin-bottom:16px;color:#fff;position:relative;overflow:hidden}
@@ -109,7 +109,7 @@ footer{text-align:center;padding:20px 12px;font-size:.6rem;color:var(--muted)}
 <body>
 
 <nav>
-  <a href="#" class="logo"><div class="logo-icon">✈</div>MesVols</a><span class="signature">Created by <b>Amaz05</b></span>
+  <a href="#" class="logo"><div class="logo-icon">✈</div>MesVols</a><span class="signature"><b>Amaz05</b></span>
   <div class="nav-r"><span class="nav-time" id="upd"></span><span id="clock" style="margin-left:6px;font-variant-numeric:tabular-nums;font-size:.85rem;color:#e85d24;font-weight:600"></span><div class="live"><span class="dot"></span>Suivi actif</div></div>
 </nav>
 
@@ -180,7 +180,7 @@ function render(){
   const data=[...FLIGHT_DATA].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const upd=typeof LAST_UPDATE!=='undefined'?LAST_UPDATE:'';
   document.getElementById('sub').textContent=`${data.length} captures`;
-  document.getElementById('upd').textContent=upd?'Collecte : '+fmtMtl(upd):'';
+  document.getElementById('upd').textContent=upd?fmtMtl(upd).replace(/^(\d{4})-(\d{2})-(\d{2})/,'Collecte $3/$2'):'';
 
   const bd={};data.forEach(r=>{const d=r.destination;if(!d)return;if(!bd[d])bd[d]=[];bd[d].push(r);});
   const routes=Object.keys(bd);
