@@ -196,7 +196,7 @@ const IMG={
   MIA:'https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?w=700&q=70'
 };
 
-function showEmpty(){document.getElementById('empty').style.display='block';document.getElementById('data').style.display='none';document.getElementById('sub').textContent='En attente de données...';}
+function showEmpty(){const el=document.getElementById('empty'),da=document.getElementById('data'),su=document.getElementById('sub');if(el)el.style.display='block';if(da)da.style.display='none';if(su)su.textContent='En attente de données...';}
 
 function st(s){const n=s||0;return'★'.repeat(n)+'☆'.repeat(5-n);}
 function stC(s){return s>=5?'color:var(--gold)':s>=4?'color:var(--teal)':s>=3?'color:var(--sky)':'color:var(--muted)';}
