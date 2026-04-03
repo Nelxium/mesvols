@@ -160,6 +160,90 @@ def test_aria_label_plural_french():
     assert m and m.group(1).strip() == "Air Canada"
 
 
+def test_aria_label_english_singular():
+    """Le regex aria-label matche 'Flight with X' (singulier EN)."""
+    import re
+    pattern = re.compile(r"(?:Vols? avec|Flights? with)\s+([^,\.]+)", re.IGNORECASE)
+    m = pattern.search("Flight with Delta. Nonstop")
+    assert m and m.group(1).strip() == "Delta"
+
+
+# --- Extraction escales depuis aria-label ---
+
+def test_stops_direct_fr():
+    """'Sans escale' -> direct."""
+    aria = "Vol avec JetBlue. Sans escale. 5 h 30 min"
+    assert "sans escale" in aria.lower()
+
+
+def test_stops_nonstop_en():
+    """'Nonstop' -> direct."""
+    aria = "Flights with United. Nonstop. 1 hr 15 min"
+    assert "nonstop" in aria.lower()
+
+
+def test_stops_nonstop_hyphenated():
+    """'Non-stop' (avec tiret) -> direct."""
+    aria = "Flight with Delta. Non-stop. 4 h 30 min"
+    assert "non-stop" in aria.lower()
+
+
+def test_stops_direct_en():
+    """'direct' keyword -> direct."""
+    aria = "Flights with American. direct. 5 h"
+    assert "direct" in aria.lower()
+
+
+def test_stops_1_escale_singular():
+    """'1 escale' -> 1 stop."""
+    import re
+    m = re.search(r"(\d+)\s*(?:escales?|stops?)", "1 escale")
+    assert m and int(m.group(1)) == 1
+
+
+def test_stops_2_escales_plural():
+    """'2 escales' -> 2 stops."""
+    import re
+    m = re.search(r"(\d+)\s*(?:escales?|stops?)", "2 escales")
+    assert m and int(m.group(1)) == 2
+
+
+def test_stops_1_stop_singular():
+    """'1 stop' -> 1 stop."""
+    import re
+    m = re.search(r"(\d+)\s*(?:escales?|stops?)", "1 stop")
+    assert m and int(m.group(1)) == 1
+
+
+def test_stops_2_stops_plural():
+    """'2 stops' -> 2 stops."""
+    import re
+    m = re.search(r"(\d+)\s*(?:escales?|stops?)", "2 stops")
+    assert m and int(m.group(1)) == 2
+
+
+# --- Rejet parasites supplementaires ---
+
+def test_round_trip_en():
+    """'round trip' -> Inconnue."""
+    assert normalize_airline("round trip") == "Inconnue"
+
+
+def test_one_way_en():
+    """'one way' -> Inconnue."""
+    assert normalize_airline("one way") == "Inconnue"
+
+
+def test_aller_seul():
+    """'aller' seul -> Inconnue."""
+    assert normalize_airline("aller") == "Inconnue"
+
+
+def test_retour_seul():
+    """'retour' seul -> Inconnue."""
+    assert normalize_airline("retour") == "Inconnue"
+
+
 if __name__ == "__main__":
     tests = [f for f in dir() if f.startswith("test_")]
     passed = 0

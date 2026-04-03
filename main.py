@@ -90,7 +90,7 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
         reval_map = {}
     raw_rows = []
     last_date = ""
-    route_prices = defaultdict(list)  # tous les prix (pour FLIGHT_DATA scores)
+    route_prices = defaultdict(list)  # prix des lignes publiables uniquement
 
     with open(CSV_PATH, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -118,7 +118,9 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
 
             # Prix effectif = le plus bas des deux
             best_price = min(price_g, price_s) if price_s else price_g
-            route_prices[route].append(best_price)
+            # Seules les lignes publiables contribuent aux scores publics
+            if airline != "Inconnue":
+                route_prices[route].append(best_price)
 
             raw_rows.append({
                 "date": date, "route": route, "origin": origin, "dest": dest,
@@ -146,7 +148,7 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
 
     route_prices_prior = defaultdict(list)
     for r in raw_rows:
-        if r["date"] not in last_cycle_dates:
+        if r["date"] not in last_cycle_dates and r["airline"] != "Inconnue":
             route = r["route"]
             best_price = min(r["price_google"], r["price_skyscanner"]) \
                 if r["price_skyscanner"] else r["price_google"]
@@ -159,7 +161,12 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
     captured_deals = load_deals()
 
     flights = []
+    skipped_inconnue = 0
     for r in raw_rows:
+        # Ne pas publier les lignes sans compagnie identifiee
+        if r["airline"] == "Inconnue":
+            skipped_inconnue += 1
+            continue
         origin, dest = r["origin"], r["dest"]
         depart, retour = r["depart"], r["retour"]
         price_g, price_s = r["price_google"], r["price_skyscanner"]
@@ -256,6 +263,26 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
             else:
                 # Pas assez d'historique : score neutre (3 = pas de comparaison)
                 info["score"] = 3
+
+    # Exclure les destinations Inconnue de BEST_OFFERS
+    inconnue_bo = [d for d, info in best_offers.items()
+                   if info.get("airline") == "Inconnue"]
+    for d in inconnue_bo:
+        del best_offers[d]
+
+    # Warnings
+    if skipped_inconnue:
+        current_inconnue = sum(1 for r in raw_rows
+                               if r["airline"] == "Inconnue"
+                               and r["date"] in last_cycle_dates)
+        print(f"  data.js: {skipped_inconnue} ligne(s) airline=Inconnue "
+              f"exclue(s) de FLIGHT_DATA")
+        if current_inconnue:
+            print(f"  WARNING: {current_inconnue} ligne(s) Inconnue dans "
+                  f"le cycle courant — verifier le scraper")
+    if inconnue_bo:
+        print(f"  WARNING: BEST_OFFERS exclut {len(inconnue_bo)} dest(s) "
+              f"Inconnue: {inconnue_bo}")
 
     entries = ",\n  ".join(json.dumps(f, ensure_ascii=False) for f in flights)
     bo_json = json.dumps(best_offers, ensure_ascii=False)

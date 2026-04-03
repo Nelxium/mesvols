@@ -20,6 +20,8 @@ DEST_CODES = {r[1] for r in ROUTES}
 
 # Seuil minimum de couverture pour publier (50% des resultats attendus)
 MIN_COVERAGE_RATIO = 0.50
+# Seuil max de lignes Inconnue dans le cycle courant (au-dela, publication bloquee)
+MAX_INCONNUE_RATIO = 0.30
 
 
 def _write_health(results, by_dest, deals, status):
@@ -230,14 +232,26 @@ def main():
         print("Pas d'aubaine.")
 
     # 3. Construire best_offers_current (simplifie, sans booking capture)
+    #    Preferer une compagnie connue meme si un peu plus chere
     by_dest = {}
     for r in results:
         dest = r.get("destination", "")
         price = r.get("price_google", 0)
         if isinstance(price, str):
             price = int(price) if price else 0
-        if dest not in by_dest or price < by_dest[dest].get("price_google", 0):
+        is_known = normalize_airline(r.get("airline", "")) != "Inconnue"
+
+        current = by_dest.get(dest)
+        if current is None:
             by_dest[dest] = r
+        else:
+            cur_price = current.get("price_google", 0)
+            if isinstance(cur_price, str):
+                cur_price = int(cur_price) if cur_price else 0
+            cur_known = normalize_airline(current.get("airline", "")) != "Inconnue"
+            # Compagnie connue bat Inconnue ; a status egal, le moins cher gagne
+            if (is_known and not cur_known) or (is_known == cur_known and price < cur_price):
+                by_dest[dest] = r
 
     best_offers_current = {}
     for dest, r in by_dest.items():
@@ -275,7 +289,18 @@ def main():
             "search_label": search_label,
         }
 
-    # 4. Coverage gate — bloquer la publication si couverture insuffisante
+    # 4a. Inconnue gate — bloquer si trop de lignes sans compagnie identifiee
+    n_inconnue = sum(1 for r in results
+                     if normalize_airline(r.get("airline", "")) == "Inconnue")
+    if results and n_inconnue / len(results) > MAX_INCONNUE_RATIO:
+        _write_health(results, by_dest, deals, "degraded")
+        pct = round(n_inconnue / len(results) * 100)
+        print(f"\nTrop de lignes Inconnue : {n_inconnue}/{len(results)} "
+              f"({pct}% > {int(MAX_INCONNUE_RATIO * 100)}%)")
+        print("Publication bloquee. Verifier le scraper.")
+        sys.exit(1)
+
+    # 4b. Coverage gate — bloquer la publication si couverture insuffisante
     if coverage < MIN_COVERAGE_RATIO:
         health = _write_health(results, by_dest, deals, "degraded")
         print(f"\nCouverture insuffisante : {len(results)}/{expected} "

@@ -313,13 +313,14 @@ def parse_flight_results(driver):
                         airline = known
                         break
 
-            # Escales : "Sans escale" / "direct" / "nonstop" / "N escale" / "N stop"
+            # Escales : "Sans escale" / "direct" / "nonstop" / "non-stop" / "N escale(s)" / "N stop(s)"
             aria_low = aria.lower()
-            if "sans escale" in aria_low or "direct" in aria_low or "nonstop" in aria_low:
+            if ("sans escale" in aria_low or "direct" in aria_low
+                    or "nonstop" in aria_low or "non-stop" in aria_low):
                 stops = 0
                 stops_text = "Direct"
             else:
-                m2 = re.search(r"(\d+)\s*(?:escale|stop)", aria_low)
+                m2 = re.search(r"(\d+)\s*(?:escales?|stops?)", aria_low)
                 if m2:
                     stops = int(m2.group(1))
                     stops_text = f"{stops} escale(s)"
@@ -346,11 +347,12 @@ def parse_flight_results(driver):
         # Fallback escales dans le texte
         if stops == -1:
             row_text = row.text.lower()
-            if "sans escale" in row_text:
+            if ("sans escale" in row_text or "direct" in row_text
+                    or "nonstop" in row_text or "non-stop" in row_text):
                 stops = 0
                 stops_text = "Direct"
             else:
-                m3 = re.search(r"(\d+)\s*escale", row_text)
+                m3 = re.search(r"(\d+)\s*(?:escales?|stops?)", row_text)
                 if m3:
                     stops = int(m3.group(1))
                     stops_text = f"{stops} escale(s)"
