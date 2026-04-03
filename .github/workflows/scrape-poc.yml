@@ -51,16 +51,36 @@ jobs:
             exit 0
           fi
           git commit -m "update data"
+
+          # Restore les artefacts generes non-publics pour que le worktree
+          # soit propre avant rebase (main_ci.py modifie data.js racine
+          # et prix_vols.csv, mais seul docs/ est publie).
+          echo "Cleaning generated files from worktree..."
+          git checkout -- data.js prix_vols.csv 2>/dev/null || true
+          echo "Worktree status:"
+          git status --short
+
           for i in 1 2 3; do
-            echo "--- Push attempt $i/3 ---"
-            # Rebase sur origin/main (nettoyer tout etat rebase residuel)
+            echo "--- Attempt $i/3 ---"
             git rebase --abort 2>/dev/null || true
-            if ! git pull --rebase origin main; then
-              echo "ERROR: rebase conflict (not retryable)"
-              git rebase --abort 2>/dev/null || true
-              exit 1
+
+            # Pull + rebase
+            pull_ok=true
+            git pull --rebase origin main 2>&1 || pull_ok=false
+
+            if [ "$pull_ok" = false ]; then
+              # Distinguer conflit de rebase vs erreur transitoire
+              if git status | grep -q "rebase in progress"; then
+                echo "ERROR: rebase conflict (not retryable)"
+                git rebase --abort 2>/dev/null || true
+                exit 1
+              fi
+              echo "Pull/rebase failed (transient?), retrying in 5s..."
+              sleep 5
+              continue
             fi
-            # Push — seul cas retriable (remote avance entre rebase et push)
+
+            # Push
             if git push; then
               echo "Push OK"
               exit 0
