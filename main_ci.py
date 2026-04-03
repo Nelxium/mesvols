@@ -91,7 +91,7 @@ def validate_data_js(path=DATA_JS_PATH):
         errors.append("LAST_UPDATE vide ou absent")
     else:
         last_update = m_upd.group(1)
-        if not re.match(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}", last_update):
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}Z?", last_update):
             errors.append(f"LAST_UPDATE format invalide: {last_update}")
 
     # B2: BEST_OFFERS non vide + prix valides
@@ -123,17 +123,19 @@ def validate_data_js(path=DATA_JS_PATH):
                     f"(manquent: {', '.join(sorted(missing))})")
 
     # B6: coherence FLIGHT_DATA cycle courant ↔ BEST_OFFERS
-    # Toute destination presente dans FLIGHT_DATA du cycle courant
-    # doit avoir une entree dans BEST_OFFERS.
     if flights and bo and last_update:
-        fd_current_dests = {e["destination"] for e in flights
-                           if e.get("date") == last_update and e.get("destination")}
-        bo_dests = set(bo.keys())
-        missing_in_bo = fd_current_dests - bo_dests
-        if missing_in_bo:
+        fd_current = [e for e in flights
+                      if e.get("date") == last_update and e.get("destination")]
+        if not fd_current:
             errors.append(
-                f"Destinations dans FLIGHT_DATA courant mais absentes de BEST_OFFERS: "
-                f"{', '.join(sorted(missing_in_bo))}")
+                f"Aucune entree FLIGHT_DATA au timestamp LAST_UPDATE ({last_update})")
+        else:
+            fd_current_dests = {e["destination"] for e in fd_current}
+            missing_in_bo = fd_current_dests - set(bo.keys())
+            if missing_in_bo:
+                errors.append(
+                    f"Destinations dans FLIGHT_DATA courant mais absentes de BEST_OFFERS: "
+                    f"{', '.join(sorted(missing_in_bo))}")
 
     # Warnings non-bloquants
     if bo and last_update:

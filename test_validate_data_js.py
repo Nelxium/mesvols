@@ -245,6 +245,57 @@ def test_fd_dest_coherent():
         os.unlink(p)
 
 
+# --- Tests ajustement final : LAST_UPDATE strict + cycle courant non-vide ---
+
+def test_last_update_suffix_garbage():
+    """LAST_UPDATE avec suffixe garbage = erreur."""
+    p = _tmp()
+    _write_js(p, last_update="2026-04-03 04:34 garbage")
+    try:
+        ok, errs, _ = validate_data_js(p)
+        assert not ok, f"Should fail with suffix garbage: {errs}"
+        assert any("LAST_UPDATE" in e for e in errs)
+    finally:
+        os.unlink(p)
+
+
+def test_last_update_with_z_suffix():
+    """LAST_UPDATE avec suffixe Z valide = OK."""
+    p = _tmp()
+    ts = "2026-04-03 04:34Z"
+    _write_js(p, flight_data=_good_fd(), best_offers=_good_bo(), last_update=ts)
+    # Rewrite with matching timestamps in FD
+    fd = json.dumps([
+        {"destination": d, "route": f"Montreal -> {d}", "price": 500 + i * 100,
+         "date": ts, "stops": "Direct", "depart": "2026-06-01", "retour": "2026-06-08"}
+        for i, d in enumerate(("CDG", "CUN", "NRT", "HND", "PUJ"))
+    ])
+    _write_js(p, flight_data=fd, best_offers=_good_bo(), last_update=ts)
+    try:
+        ok, errs, _ = validate_data_js(p)
+        assert ok, f"Should pass with Z suffix: {errs}"
+    finally:
+        os.unlink(p)
+
+
+def test_zero_fd_rows_at_last_update():
+    """Aucune ligne FLIGHT_DATA au timestamp LAST_UPDATE = erreur."""
+    p = _tmp()
+    # FLIGHT_DATA a un timestamp different de LAST_UPDATE
+    fd = json.dumps([
+        {"destination": "CDG", "route": "a", "price": 500, "date": "2026-04-02 12:00Z"},
+        {"destination": "CUN", "route": "b", "price": 400, "date": "2026-04-02 12:00Z"},
+    ])
+    bo = _good_bo(("CDG", "CUN", "NRT", "HND", "PUJ"))
+    _write_js(p, flight_data=fd, best_offers=bo, last_update="2026-04-03 12:00Z")
+    try:
+        ok, errs, _ = validate_data_js(p)
+        assert not ok, f"Should fail with zero current-cycle rows: {errs}"
+        assert any("Aucune entree FLIGHT_DATA" in e for e in errs)
+    finally:
+        os.unlink(p)
+
+
 if __name__ == "__main__":
     tests = [f for f in dir() if f.startswith("test_")]
     passed = 0
