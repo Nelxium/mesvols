@@ -34,7 +34,7 @@ def build_skyscanner_url(deal):
 def build_united_search_url(origin, dest, depart_date, return_date):
     """Recherche pre-remplie sur united.com."""
     return (
-        f"https://www.united.com/en/us/fsr/choose-flights"
+        f"https://www.united.com/en/ca/fsr/choose-flights"
         f"?tt=RT&f={origin}&t={dest}&d={depart_date}&r={return_date}&px=1"
     )
 
