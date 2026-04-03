@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -57,6 +59,7 @@ jobs:
           # et prix_vols.csv, mais seul docs/ est publie).
           echo "Cleaning generated files from worktree..."
           git checkout -- data.js prix_vols.csv 2>/dev/null || true
+          rm -f ci_health.json
           if [ -n "$(git diff --name-only)" ]; then
             echo "ERROR: worktree still dirty before rebase:"
             git diff --name-only
@@ -84,7 +87,7 @@ jobs:
             fi
 
             # Push
-            if git push; then
+            if git push origin main; then
               echo "Push OK"
               exit 0
             fi
