@@ -1,8 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: MesVols - Pipeline automatise
-:: Lance scraping + publication + push GitHub Pages
+:: MesVols - Watchdog local (monitoring/verification)
+:: Ne modifie pas le CSV ni data.js, ne push pas.
+:: GitHub Actions est le pipeline de publication.
 
 cd /d "%~dp0"
 
@@ -17,56 +18,17 @@ for /f "tokens=*" %%t in ('powershell -command "Get-Date -Format 'yyyy-MM-dd HH:
 
 echo. >> "%LOG%"
 echo ========================================== >> "%LOG%"
-echo [%NOW%] Debut du pipeline >> "%LOG%"
+echo [%NOW%] Watchdog MesVols >> "%LOG%"
 echo ========================================== >> "%LOG%"
 
-:: Etape 1 : Scraping + generation data.js
-echo [%NOW%] Etape 1/3 : python main.py >> "%LOG%"
-python main.py >> "%LOG%" 2>&1
-if !errorlevel! neq 0 (
-    for /f "tokens=*" %%t in ('powershell -command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss'"') do set NOW=%%t
-    echo [!NOW!] ECHEC main.py (code !errorlevel!) >> "%LOG%"
-    exit /b 1
-)
-for /f "tokens=*" %%t in ('powershell -command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss'"') do set NOW=%%t
-echo [!NOW!] main.py OK >> "%LOG%"
-
-:: Etape 2 : Publication vers docs/
-echo [!NOW!] Etape 2/3 : python publish.py >> "%LOG%"
-python publish.py >> "%LOG%" 2>&1
-if !errorlevel! neq 0 (
-    for /f "tokens=*" %%t in ('powershell -command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss'"') do set NOW=%%t
-    echo [!NOW!] ECHEC publish.py (code !errorlevel!) >> "%LOG%"
-    exit /b 2
-)
-for /f "tokens=*" %%t in ('powershell -command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss'"') do set NOW=%%t
-echo [!NOW!] publish.py OK >> "%LOG%"
-
-:: Etape 3 : Commit + push si changements
-echo [!NOW!] Etape 3/3 : git commit + push >> "%LOG%"
-git add data.js prix_vols.csv docs/data.js >> "%LOG%" 2>&1
-
-git diff --cached --quiet
-if !errorlevel! equ 0 (
-    for /f "tokens=*" %%t in ('powershell -command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss'"') do set NOW=%%t
-    echo [!NOW!] Aucun changement a publier >> "%LOG%"
-    exit /b 0
-)
+python watchdog.py >> "%LOG%" 2>&1
+set EC=!errorlevel!
 
 for /f "tokens=*" %%t in ('powershell -command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss'"') do set NOW=%%t
-git commit -m "update data %NOW%" >> "%LOG%" 2>&1
-if !errorlevel! neq 0 (
-    echo [!NOW!] ECHEC git commit >> "%LOG%"
-    exit /b 3
+if !EC! neq 0 (
+    echo [!NOW!] Watchdog termine avec erreur (code !EC!) >> "%LOG%"
+) else (
+    echo [!NOW!] Watchdog OK >> "%LOG%"
 )
 
-git push >> "%LOG%" 2>&1
-if !errorlevel! neq 0 (
-    for /f "tokens=*" %%t in ('powershell -command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss'"') do set NOW=%%t
-    echo [!NOW!] ECHEC git push >> "%LOG%"
-    exit /b 4
-)
-
-for /f "tokens=*" %%t in ('powershell -command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss'"') do set NOW=%%t
-echo [!NOW!] Push OK — pipeline termine avec succes >> "%LOG%"
-exit /b 0
+exit /b !EC!

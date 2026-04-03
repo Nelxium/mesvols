@@ -421,6 +421,11 @@ def revalidate_and_capture(deals):
 
 
 def main():
+    # Init defensive : ces variables sont utilisees dans plusieurs branches
+    # et doivent exister meme si une etape intermediaire echoue.
+    screenshot_map = {}
+    reval_map = {}
+
     # 1. Scraper les prix actuels
     results = run_scraper()
 
@@ -451,10 +456,6 @@ def main():
             by_dest[dest] = r
 
     # Construire best_offers_current pour data.js (source de verite unique)
-    # screenshot_map et reval_map sont remplis plus tard par revalidate_and_capture(),
-    # mais doivent exister ici pour la construction initiale de best_offers_current.
-    screenshot_map = {}
-    reval_map = {}
     captured_deals = load_deals()
     best_offers_current = {}
 
