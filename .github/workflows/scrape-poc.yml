@@ -57,8 +57,11 @@ jobs:
           # et prix_vols.csv, mais seul docs/ est publie).
           echo "Cleaning generated files from worktree..."
           git checkout -- data.js prix_vols.csv 2>/dev/null || true
-          echo "Worktree status:"
-          git status --short
+          if [ -n "$(git diff --name-only)" ]; then
+            echo "ERROR: worktree still dirty before rebase:"
+            git diff --name-only
+            exit 1
+          fi
 
           for i in 1 2 3; do
             echo "--- Attempt $i/3 ---"
