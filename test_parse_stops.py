@@ -59,21 +59,58 @@ def test_unknown_format_fallback():
 
 
 def test_find_deals_uses_escales_key():
-    """find_deals doit lire le champ 'escales' du scraper, pas 'stops'."""
-    from analyzer import find_deals, parse_stops
-    # Simuler un result du scraper (champ "escales", pas "stops")
-    result = {
-        "route": "TEST_ROUTE",
-        "price_google": 500,
-        "escales": "1 escale(s)",
-    }
-    stops_str = result.get("escales") or result.get("stops", "")
-    num_stops = parse_stops(stops_str)
-    assert num_stops == 1, f"Should read escales=1, got {num_stops}"
-    # Aussi verifier que sans "escales", "stops" fonctionne comme fallback
-    result2 = {"route": "TEST2", "price_google": 400, "stops": "2 escale(s)"}
-    stops_str2 = result2.get("escales") or result2.get("stops", "")
-    assert parse_stops(stops_str2) == 2
+    """find_deals doit lire le champ 'escales' du scraper, pas 'stops'.
+    On appelle find_deals() avec un result qui a 'escales' mais pas 'stops'.
+    Si find_deals regressait a lire 'stops', le vol serait classe Direct a tort."""
+    import os
+    import csv
+    import tempfile
+    import analyzer as _ana
+
+    # Creer un CSV historique minimal pour que find_deals ait assez de datapoints
+    tmp = tempfile.mktemp(suffix=".csv")
+    fields = ["date", "route", "origin", "destination", "price_google",
+              "price_skyscanner", "airline", "escales", "depart", "retour", "booking_url"]
+    hist_rows = [
+        {"date": f"2026-03-{20+i} 12:00Z", "route": "Montreal -> Paris", "origin": "YUL",
+         "destination": "CDG", "price_google": str(800 + i * 10), "price_skyscanner": "",
+         "airline": "Air Canada", "escales": "1 escale(s)", "depart": "2026-06-01",
+         "retour": "2026-06-08", "booking_url": ""}
+        for i in range(5)
+    ]
+    with open(tmp, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        for r in hist_rows:
+            w.writerow(r)
+
+    # Monkey-patch le CSV path
+    original = _ana.CSV_FILE
+    _ana.CSV_FILE = tmp
+    try:
+        # Result du scraper : "escales" = "2 escale(s)", pas de champ "stops"
+        result = {
+            "route": "Montreal -> Paris",
+            "price_google": 500,
+            "escales": "2 escale(s)",
+            "origin": "YUL",
+            "destination": "CDG",
+            "depart": "2026-06-01",
+            "retour": "2026-06-08",
+            "airline": "Air Canada",
+        }
+        deals = _ana.find_deals([result])
+        # Le vol est un deal (500 vs avg ~830)
+        assert len(deals) >= 1, f"Should detect a deal, got {len(deals)}"
+        deal = deals[0]
+        # Le point cle : num_stops doit etre 2, pas 0 (Direct)
+        assert deal.get("num_stops") == 2, (
+            f"num_stops should be 2 from 'escales', got {deal.get('num_stops')}. "
+            f"If 0, find_deals is still reading 'stops' instead of 'escales'."
+        )
+    finally:
+        _ana.CSV_FILE = original
+        os.unlink(tmp)
 
 
 if __name__ == "__main__":
