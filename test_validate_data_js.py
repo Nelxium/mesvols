@@ -423,6 +423,297 @@ def test_price_normal_no_warning():
         os.unlink(p)
 
 
+# --- Tests route-aware price warnings ---
+
+def _fd_with_history(dest, route, prior_prices, current_price,
+                     prior_date="2026-04-02 10:00Z", origin="YUL",
+                     airline="TestAir"):
+    """Genere un FLIGHT_DATA avec historique + cycle courant pour une route."""
+    entries = []
+    for i, p in enumerate(prior_prices):
+        entries.append({
+            "origin": origin, "destination": dest, "route": route,
+            "price": p, "airline": airline,
+            "date": prior_date, "stops": "Direct",
+            "depart": "2026-06-01", "retour": "2026-06-08",
+        })
+    # Cycle courant
+    entries.append({
+        "origin": origin, "destination": dest, "route": route,
+        "price": current_price, "airline": airline,
+        "date": LU, "stops": "Direct",
+        "depart": "2026-06-01", "retour": "2026-06-08",
+    })
+    return entries
+
+
+def test_route_aware_warns_on_very_low_price():
+    """Prix BEST_OFFERS très bas vs moyenne route = warning W-PRICE-ROUTE."""
+    # Historique CDG: avg ~900, BO price 100 → ratio 0.11 < 0.30
+    fd_entries = _fd_with_history("CDG", "Montreal -> Paris",
+                                 [800, 900, 1000], 850)
+    # Ajouter les 4 autres destinations pour passer la couverture BO
+    for d in ("CUN", "NRT", "HND", "PUJ"):
+        fd_entries.extend(_fd_with_history(d, f"Montreal -> {d}",
+                                           [500, 600, 700], 550))
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    bo = {d: {"price": 550, "date": LU, "search_url": "https://..."}
+          for d in dests}
+    bo["CDG"]["price"] = 100  # suspicieusement bas
+
+    p = _tmp()
+    _write_js(p, flight_data=json.dumps(fd_entries),
+              best_offers=json.dumps(bo))
+    try:
+        ok, errs, warns = validate_data_js(p)
+        route_warns = [w for w in warns if "W-PRICE-ROUTE" in w]
+        assert len(route_warns) == 1, f"Expected 1 route warning, got: {route_warns}"
+        assert "CDG" in route_warns[0]
+        assert "tres bas" in route_warns[0]
+        assert ok, f"Route warning should not block: {errs}"
+    finally:
+        os.unlink(p)
+
+
+def test_route_aware_warns_on_very_high_price():
+    """Prix BEST_OFFERS très haut vs moyenne route = warning W-PRICE-ROUTE."""
+    # Historique JFK: avg ~350, BO price 2000 → ratio 5.7 > 3.0
+    fd_entries = _fd_with_history("JFK", "Montreal -> New York",
+                                 [300, 350, 400], 350)
+    for d in ("CDG", "CUN", "NRT", "HND", "PUJ"):
+        fd_entries.extend(_fd_with_history(d, f"Montreal -> {d}",
+                                           [500, 600, 700], 550))
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ", "JFK")
+    bo = {d: {"price": 550, "date": LU, "search_url": "https://..."}
+          for d in dests}
+    bo["JFK"]["price"] = 2000  # suspicieusement haut
+
+    p = _tmp()
+    # FD needs all BO dests for coherence
+    _write_js(p, flight_data=json.dumps(fd_entries),
+              best_offers=json.dumps(bo))
+    try:
+        ok, errs, warns = validate_data_js(p)
+        route_warns = [w for w in warns if "W-PRICE-ROUTE" in w]
+        assert len(route_warns) == 1, f"Expected 1 route warning, got: {route_warns}"
+        assert "JFK" in route_warns[0]
+        assert "tres haut" in route_warns[0]
+    finally:
+        os.unlink(p)
+
+
+def test_route_aware_no_warn_insufficient_history():
+    """Route avec < 3 points historiques = pas de warning route-aware."""
+    # Seulement 2 points historiques pour CDG
+    fd_entries = []
+    fd_entries.append({"origin": "YUL", "destination": "CDG",
+                       "route": "Montreal -> Paris", "airline": "Air Canada",
+                       "price": 900, "date": "2026-04-02 10:00Z",
+                       "stops": "Direct", "depart": "2026-06-01",
+                       "retour": "2026-06-08"})
+    fd_entries.append({"origin": "YUL", "destination": "CDG",
+                       "route": "Montreal -> Paris", "airline": "Air Transat",
+                       "price": 1000, "date": "2026-04-02 10:00Z",
+                       "stops": "Direct", "depart": "2026-07-01",
+                       "retour": "2026-07-08"})
+    # Current cycle
+    fd_entries.append({"origin": "YUL", "destination": "CDG",
+                       "route": "Montreal -> Paris", "airline": "Air Canada",
+                       "price": 100, "date": LU, "stops": "Direct",
+                       "depart": "2026-06-01", "retour": "2026-06-08"})
+    # Other dests for coverage
+    for d in ("CUN", "NRT", "HND", "PUJ"):
+        fd_entries.extend(_fd_with_history(d, f"Montreal -> {d}",
+                                           [500, 600, 700], 550))
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    bo = {d: {"price": 550, "date": LU, "search_url": "https://..."}
+          for d in dests}
+    bo["CDG"]["price"] = 100  # Would be suspicious, but not enough history
+
+    p = _tmp()
+    _write_js(p, flight_data=json.dumps(fd_entries),
+              best_offers=json.dumps(bo))
+    try:
+        ok, errs, warns = validate_data_js(p)
+        route_warns = [w for w in warns if "W-PRICE-ROUTE" in w]
+        assert not route_warns, f"Should not warn with < 3 datapoints: {route_warns}"
+    finally:
+        os.unlink(p)
+
+
+def test_route_aware_excludes_current_cycle():
+    """La baseline route-aware exclut le cycle courant."""
+    # Prior: avg=900. Current: 100 (same LU hour).
+    # If current leaks into baseline, avg would drop, masking the warning.
+    fd_entries = _fd_with_history("CDG", "Montreal -> Paris",
+                                 [800, 900, 1000], 100)
+    for d in ("CUN", "NRT", "HND", "PUJ"):
+        fd_entries.extend(_fd_with_history(d, f"Montreal -> {d}",
+                                           [500, 600, 700], 550))
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    bo = {d: {"price": 550, "date": LU, "search_url": "https://..."}
+          for d in dests}
+    bo["CDG"]["price"] = 100  # ratio vs prior avg 900 = 0.11 < 0.30
+
+    p = _tmp()
+    _write_js(p, flight_data=json.dumps(fd_entries),
+              best_offers=json.dumps(bo))
+    try:
+        ok, errs, warns = validate_data_js(p)
+        route_warns = [w for w in warns if "W-PRICE-ROUTE" in w]
+        assert len(route_warns) == 1, \
+            f"Should warn (current excluded from baseline): {route_warns}"
+        assert "CDG" in route_warns[0]
+    finally:
+        os.unlink(p)
+
+
+def test_route_aware_normal_price_no_warning():
+    """Prix normal pour la route = pas de warning route-aware."""
+    fd_entries = _fd_with_history("CDG", "Montreal -> Paris",
+                                 [800, 900, 1000], 850)
+    for d in ("CUN", "NRT", "HND", "PUJ"):
+        fd_entries.extend(_fd_with_history(d, f"Montreal -> {d}",
+                                           [500, 600, 700], 550))
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    bo = {d: {"price": 550, "date": LU, "search_url": "https://..."}
+          for d in dests}
+    bo["CDG"]["price"] = 850  # normal: ratio ~0.94
+
+    p = _tmp()
+    _write_js(p, flight_data=json.dumps(fd_entries),
+              best_offers=json.dumps(bo))
+    try:
+        ok, errs, warns = validate_data_js(p)
+        route_warns = [w for w in warns if "W-PRICE-ROUTE" in w]
+        assert not route_warns, f"Normal price should not trigger: {route_warns}"
+    finally:
+        os.unlink(p)
+
+
+def test_route_baselines_unit():
+    """Test unitaire de _route_baselines() — cle (origin, dest), excl. cycle courant."""
+    from main_ci import _route_baselines
+    flights = [
+        # Prior: 3 entries YUL-CDG
+        {"origin": "YUL", "destination": "CDG", "price": 800,
+         "date": "2026-04-02 10:00Z", "airline": "Air Canada"},
+        {"origin": "YUL", "destination": "CDG", "price": 900,
+         "date": "2026-04-02 10:00Z", "airline": "Air Transat"},
+        {"origin": "YUL", "destination": "CDG", "price": 1000,
+         "date": "2026-04-02 10:00Z", "airline": "Delta"},
+        # Prior: only 2 for YUL-NRT (insufficient)
+        {"origin": "YUL", "destination": "NRT", "price": 1500,
+         "date": "2026-04-02 10:00Z", "airline": "United"},
+        {"origin": "YUL", "destination": "NRT", "price": 1600,
+         "date": "2026-04-02 10:00Z", "airline": "ANA"},
+        # Current cycle (excluded)
+        {"origin": "YUL", "destination": "CDG", "price": 100,
+         "date": LU, "airline": "Air Canada"},
+    ]
+    bl = _route_baselines(flights, LU)
+    assert ("YUL", "CDG") in bl
+    assert bl[("YUL", "CDG")]["count"] == 3
+    assert bl[("YUL", "CDG")]["avg"] == 900.0
+    assert bl[("YUL", "CDG")]["min"] == 800
+    assert ("YUL", "NRT") not in bl  # insufficient history
+
+
+def test_route_baselines_excludes_inconnue():
+    """_route_baselines() ignore les lignes airline=Inconnue dans la baseline."""
+    from main_ci import _route_baselines
+    flights = [
+        # 3 Inconnue + 2 connues pour YUL-JFK
+        {"origin": "YUL", "destination": "JFK", "price": 100,
+         "date": "2026-04-02 10:00Z", "airline": "Inconnue"},
+        {"origin": "YUL", "destination": "JFK", "price": 150,
+         "date": "2026-04-02 10:00Z", "airline": "Inconnue"},
+        {"origin": "YUL", "destination": "JFK", "price": 200,
+         "date": "2026-04-02 10:00Z", "airline": "Inconnue"},
+        {"origin": "YUL", "destination": "JFK", "price": 800,
+         "date": "2026-04-02 10:00Z", "airline": "Delta"},
+        {"origin": "YUL", "destination": "JFK", "price": 900,
+         "date": "2026-04-02 10:00Z", "airline": "United"},
+        # Current cycle
+        {"origin": "YUL", "destination": "JFK", "price": 350,
+         "date": LU, "airline": "JetBlue"},
+    ]
+    bl = _route_baselines(flights, LU)
+    # Only 2 publishable prior entries → below MIN_ROUTE_DATAPOINTS
+    assert ("YUL", "JFK") not in bl, \
+        "Inconnue rows should not count toward baseline datapoints"
+
+
+def test_route_baselines_inconnue_mixed_enough_known():
+    """Avec assez de lignes connues malgré des Inconnue, baseline = connues seules."""
+    from main_ci import _route_baselines
+    flights = [
+        {"origin": "YUL", "destination": "JFK", "price": 100,
+         "date": "2026-04-02 10:00Z", "airline": "Inconnue"},
+        {"origin": "YUL", "destination": "JFK", "price": 800,
+         "date": "2026-04-02 10:00Z", "airline": "Delta"},
+        {"origin": "YUL", "destination": "JFK", "price": 900,
+         "date": "2026-04-02 10:00Z", "airline": "United"},
+        {"origin": "YUL", "destination": "JFK", "price": 1000,
+         "date": "2026-04-02 10:00Z", "airline": "JetBlue"},
+        # Current cycle
+        {"origin": "YUL", "destination": "JFK", "price": 350,
+         "date": LU, "airline": "Delta"},
+    ]
+    bl = _route_baselines(flights, LU)
+    assert ("YUL", "JFK") in bl
+    # avg of 800, 900, 1000 = 900 (Inconnue 100 excluded)
+    assert bl[("YUL", "JFK")]["avg"] == 900.0
+    assert bl[("YUL", "JFK")]["count"] == 3
+
+
+def test_route_label_drift_still_matches():
+    """Labels route differents mais meme (origin, dest) -> warning correct.
+
+    Le rapprochement utilise (origin, destination) IATA, pas le libelle.
+    Historique avec "Montreal -> Paris", cycle courant avec "Montréal → Paris"
+    doivent matcher sur (YUL, CDG)."""
+    fd_entries = []
+    # Historique avec un ancien label
+    for p in [800, 900, 1000]:
+        fd_entries.append({
+            "origin": "YUL", "destination": "CDG",
+            "route": "Montreal -> Paris",  # ancien label
+            "price": p, "airline": "Air Canada",
+            "date": "2026-04-02 10:00Z", "stops": "Direct",
+            "depart": "2026-06-01", "retour": "2026-06-08",
+        })
+    # Cycle courant avec un label different
+    fd_entries.append({
+        "origin": "YUL", "destination": "CDG",
+        "route": "Montréal → Paris",  # nouveau label
+        "price": 850, "airline": "Air Transat",
+        "date": LU, "stops": "Direct",
+        "depart": "2026-06-01", "retour": "2026-06-08",
+    })
+    # Autres destinations pour couverture BO
+    for d in ("CUN", "NRT", "HND", "PUJ"):
+        fd_entries.extend(_fd_with_history(d, f"Montreal -> {d}",
+                                           [500, 600, 700], 550))
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    bo = {d: {"price": 550, "date": LU, "search_url": "https://..."}
+          for d in dests}
+    bo["CDG"]["price"] = 100  # ratio 100/900 = 0.11 < 0.30
+
+    p = _tmp()
+    _write_js(p, flight_data=json.dumps(fd_entries),
+              best_offers=json.dumps(bo))
+    try:
+        ok, errs, warns = validate_data_js(p)
+        route_warns = [w for w in warns if "W-PRICE-ROUTE" in w]
+        assert len(route_warns) == 1, \
+            f"Label drift should not prevent warning: {route_warns}"
+        assert "CDG" in route_warns[0]
+        assert "YUL-CDG" in route_warns[0]
+    finally:
+        os.unlink(p)
+
+
 if __name__ == "__main__":
     tests = [f for f in dir() if f.startswith("test_")]
     passed = 0

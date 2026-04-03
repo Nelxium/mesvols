@@ -44,6 +44,58 @@ def _write_health(results, by_dest, deals, status):
     return health
 
 
+# --- Route-aware price warnings (non-bloquant) ---
+# Seuils : un prix a < 30% ou > 300% de la moyenne historique de la route
+# declenche un warning. Exige au moins 3 data points historiques.
+MIN_ROUTE_DATAPOINTS = 3
+ROUTE_PRICE_LOW_RATIO = 0.30
+ROUTE_PRICE_HIGH_RATIO = 3.0
+
+
+def _route_baselines(flights, last_update):
+    """Construit les baselines prix par paire (origin, dest) depuis FLIGHT_DATA,
+    en excluant le cycle courant et les lignes non publiables (Inconnue).
+
+    Retourne {(origin, dest): {"avg": float, "min": int, "count": int}}.
+    Paires avec < MIN_ROUTE_DATAPOINTS sont omises."""
+    if not flights or not last_update:
+        return {}
+
+    # Identifier le cycle courant par prefix horaire
+    last_hour = last_update[:13] if len(last_update) >= 13 else last_update
+    last_cycle_dates = set()
+    for e in reversed(flights):
+        d = e.get("date", "")
+        if d[:13] == last_hour:
+            last_cycle_dates.add(d)
+        else:
+            break
+
+    # Collecter les prix des cycles anterieurs, lignes publiables uniquement
+    from collections import defaultdict
+    route_prices = defaultdict(list)
+    for e in flights:
+        if e.get("date") in last_cycle_dates:
+            continue
+        if e.get("airline") == "Inconnue":
+            continue
+        origin = e.get("origin", "")
+        dest = e.get("destination", "")
+        price = e.get("price", 0)
+        if origin and dest and isinstance(price, (int, float)) and price > 0:
+            route_prices[(origin, dest)].append(price)
+
+    baselines = {}
+    for key, prices in route_prices.items():
+        if len(prices) >= MIN_ROUTE_DATAPOINTS:
+            baselines[key] = {
+                "avg": sum(prices) / len(prices),
+                "min": min(prices),
+                "count": len(prices),
+            }
+    return baselines
+
+
 def validate_data_js(path=DATA_JS_PATH):
     """Valide la structure et la sante de data.js avant publication.
     Retourne (ok, errors, warnings)."""
@@ -205,6 +257,39 @@ def validate_data_js(path=DATA_JS_PATH):
             warnings.append(
                 f"FLIGHT_DATA: {suspect_fd} prix suspect(s) "
                 f"(hors {PRICE_FLOOR}-{PRICE_CEIL}$)")
+
+    # W-PRICE-ROUTE: warnings route-aware sur BEST_OFFERS (non bloquant)
+    # Cle stable = (origin, destination) IATA codes, pas le libelle free-text
+    baselines = _route_baselines(flights, last_update)
+    if bo and baselines:
+        # Construire la table dest → origin depuis FLIGHT_DATA
+        dest_to_origin = {}
+        for e in flights:
+            d = e.get("destination", "")
+            if d and d not in dest_to_origin:
+                dest_to_origin[d] = e.get("origin", "")
+
+        for dest, info in bo.items():
+            p = info.get("price", 0)
+            if not isinstance(p, (int, float)) or p <= 0:
+                continue
+            origin = dest_to_origin.get(dest, "")
+            route_key = (origin, dest)
+            if route_key not in baselines:
+                continue  # historique insuffisant — pas de warning route-aware
+            bl = baselines[route_key]
+            avg = bl["avg"]
+            ratio = p / avg
+            if ratio < ROUTE_PRICE_LOW_RATIO:
+                warnings.append(
+                    f"W-PRICE-ROUTE: BEST_OFFERS[{dest}] {p}$ tres bas "
+                    f"vs {origin}-{dest} avg {avg:.0f}$ ({bl['count']} pts, "
+                    f"ratio {ratio:.2f} < {ROUTE_PRICE_LOW_RATIO})")
+            elif ratio > ROUTE_PRICE_HIGH_RATIO:
+                warnings.append(
+                    f"W-PRICE-ROUTE: BEST_OFFERS[{dest}] {p}$ tres haut "
+                    f"vs {origin}-{dest} avg {avg:.0f}$ ({bl['count']} pts, "
+                    f"ratio {ratio:.2f} > {ROUTE_PRICE_HIGH_RATIO})")
 
     return len(errors) == 0, errors, warnings
 
