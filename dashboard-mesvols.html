@@ -138,7 +138,7 @@ footer{text-align:center;padding:32px;font-size:.7rem;color:var(--muted)}
 
 <nav>
   <a href="#" class="logo"><div class="logo-icon">✈</div>MesVols</a>
-  <div class="nav-r"><span class="nav-time" id="upd"></span><span id="clock" style="margin-left:10px;font-variant-numeric:tabular-nums;font-size:.85rem;color:#e85d24;font-weight:600"></span><div class="live"><span class="dot"></span>Live</div></div>
+  <div class="nav-r"><span class="nav-time" id="upd"></span><span id="clock" style="margin-left:10px;font-variant-numeric:tabular-nums;font-size:.85rem;color:#e85d24;font-weight:600"></span><div class="live"><span class="dot"></span>Suivi actif</div></div>
 </nav>
 
 <main>
@@ -225,7 +225,7 @@ function render(){
   const data=[...FLIGHT_DATA].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const upd=typeof LAST_UPDATE!=='undefined'?LAST_UPDATE:'';
   document.getElementById('sub').textContent=`Surveillance active — ${data.length} captures`;
-  document.getElementById('upd').textContent=upd?'Mis à jour : '+fmtMtl(upd):'';
+  document.getElementById('upd').textContent=upd?'Dernière collecte : '+fmtMtl(upd):'';
 
   const bd={};data.forEach(r=>{const d=r.destination;if(!d)return;if(!bd[d])bd[d]=[];bd[d].push(r);});
   const routes=Object.keys(bd);
