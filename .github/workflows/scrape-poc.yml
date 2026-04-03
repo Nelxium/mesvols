@@ -51,11 +51,21 @@ jobs:
             exit 0
           fi
           git commit -m "update data"
-          # Retry loop : rebase + push, max 3 tentatives
           for i in 1 2 3; do
-            echo "Push attempt $i..."
-            git pull --rebase origin main && git push && exit 0
-            echo "Push attempt $i failed, retrying in 5s..."
+            echo "--- Push attempt $i/3 ---"
+            # Rebase sur origin/main (nettoyer tout etat rebase residuel)
+            git rebase --abort 2>/dev/null || true
+            if ! git pull --rebase origin main; then
+              echo "ERROR: rebase conflict (not retryable)"
+              git rebase --abort 2>/dev/null || true
+              exit 1
+            fi
+            # Push — seul cas retriable (remote avance entre rebase et push)
+            if git push; then
+              echo "Push OK"
+              exit 0
+            fi
+            echo "Push rejected, retrying in 5s..."
             sleep 5
           done
           echo "ERROR: push failed after 3 attempts"
