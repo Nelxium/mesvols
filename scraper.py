@@ -176,6 +176,74 @@ def extract_price(text):
 
 
 # ---------------------------------------------------------------------------
+# Normalisation du nom de compagnie
+# ---------------------------------------------------------------------------
+
+# Compagnies connues (ordre decroissant de longueur pour match greedy)
+KNOWN_AIRLINES = [
+    "Air Canada Rouge", "Air Canada Express", "Air Canada",
+    "Air Transat", "Air France",
+    "Porter Airlines", "Alaska Airlines", "Hawaiian Airlines",
+    "Turkish Airlines", "Sun Country", "Norse Atlantic",
+    "TAP Portugal", "ITA Airways", "British Airways",
+    "Qatar Airways",
+    "WestJet", "United", "Delta", "American", "JetBlue",
+    "Spirit", "Frontier", "Southwest", "Lufthansa", "KLM",
+    "Swiss", "Iberia", "Alitalia", "Aegean", "Copa",
+    "Aeromexico", "Sunwing", "Condor", "Eurowings", "Play",
+    "Icelandair", "Emirates", "Volaris", "VivaAerobus",
+    "Flair", "Lynx", "Arajet", "Avianca", "ANA", "JAL",
+]
+
+# Regex route codes (ex: YUL–JFK, YUL-CDG)
+_ROUTE_CODE_RE = re.compile(r"^[A-Z]{3}\s*[–\-]\s*[A-Z]{3}$")
+
+
+def normalize_airline(raw):
+    """Normalise un nom de compagnie brut extrait du scraping.
+
+    Gere les cas :
+    - concatenation sans separateur : "Air FranceDelta" -> "Air France"
+    - texte parasite : "Air CanadaVol opéré par ..." -> "Air Canada"
+    - code de route : "YUL–JFK" -> "Inconnue"
+    - multi-carriers propres : "Qatar Airways et JAL" -> "Qatar Airways"
+    - noms propres : "Air Canada" -> "Air Canada" (inchange)
+
+    Regle : retourner la premiere compagnie connue trouvee dans le texte,
+    ou le texte original nettoye si aucune compagnie connue n'est trouvee.
+    """
+    if not raw or raw == "Inconnue":
+        return "Inconnue"
+
+    # Rejeter les codes de route interpretes comme airline
+    if _ROUTE_CODE_RE.match(raw.strip()):
+        return "Inconnue"
+
+    # Chercher la compagnie connue qui apparait le plus tot dans le texte brut
+    best_match = None
+    best_pos = len(raw) + 1
+    for name in KNOWN_AIRLINES:
+        pos = raw.find(name)
+        if pos != -1 and pos < best_pos:
+            best_pos = pos
+            best_match = name
+    if best_match:
+        return best_match
+
+    # Nettoyer les prefixes/suffixes parasites
+    cleaned = raw.strip()
+    # Couper a "Vol opéré" ou "Operated by"
+    for sep in ("Vol opéré", "Operated by", "operated by"):
+        if sep in cleaned:
+            cleaned = cleaned[:cleaned.index(sep)].strip()
+    # Couper a "et " pour multi-carriers non reconnus
+    if " et " in cleaned:
+        cleaned = cleaned[:cleaned.index(" et ")].strip()
+
+    return cleaned if cleaned and len(cleaned) > 1 else "Inconnue"
+
+
+# ---------------------------------------------------------------------------
 # Parsing des resultats de vol
 # ---------------------------------------------------------------------------
 
@@ -255,6 +323,7 @@ def parse_flight_results(driver):
                         and not re.match(r"^\d", line) and ":" not in line
                         and "escale" not in line.lower() and "kg" not in line.lower()
                         and "min" not in line.lower() and "CO2" not in line
+                        and not _ROUTE_CODE_RE.match(line)
                         and len(line) < 50):
                     airline = line
                     break
@@ -271,7 +340,7 @@ def parse_flight_results(driver):
                     stops = int(m3.group(1))
                     stops_text = f"{stops} escale(s)"
 
-        flight["airline"] = airline
+        flight["airline"] = normalize_airline(airline)
         flight["stops"] = stops
         flight["stops_text"] = stops_text
         flights.append(flight)
