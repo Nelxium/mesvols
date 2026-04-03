@@ -391,6 +391,38 @@ def test_bo_clean_airlines_pass():
         os.unlink(p)
 
 
+# --- Tests prix aberrants (warnings, non-bloquants) ---
+
+def test_price_suspect_bo_warning():
+    """Prix < 50 ou > 15000 dans BEST_OFFERS = warning (pas bloquant)."""
+    p = _tmp()
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    bo = {d: {"price": 500 + i * 100, "date": LU, "search_url": "https://..."}
+          for i, d in enumerate(dests)}
+    bo["CDG"]["price"] = 10  # suspect bas
+    _write_js(p, flight_data=_good_fd(dests), best_offers=json.dumps(bo))
+    try:
+        ok, errs, warns = validate_data_js(p)
+        assert ok, f"Price warning should not block: {errs}"
+        assert any("suspect" in w.lower() for w in warns), f"Should warn: {warns}"
+    finally:
+        os.unlink(p)
+
+
+def test_price_normal_no_warning():
+    """Prix normaux = pas de warning prix."""
+    p = _tmp()
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    _write_js(p, flight_data=_good_fd(dests), best_offers=_good_bo(dests))
+    try:
+        ok, errs, warns = validate_data_js(p)
+        assert ok
+        price_warns = [w for w in warns if "suspect" in w.lower()]
+        assert not price_warns, f"Should have no price warnings: {price_warns}"
+    finally:
+        os.unlink(p)
+
+
 if __name__ == "__main__":
     tests = [f for f in dir() if f.startswith("test_")]
     passed = 0

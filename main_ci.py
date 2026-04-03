@@ -185,6 +185,25 @@ def validate_data_js(path=DATA_JS_PATH):
         if empty_urls:
             warnings.append(f"search_url vide pour: {', '.join(empty_urls)}")
 
+    # W-PRICE: detection prudente de prix aberrants (warning, non bloquant)
+    PRICE_FLOOR = 50    # Aucun vol reel < 50 CAD
+    PRICE_CEIL = 15000  # Aucun vol eco reel > 15000 CAD
+    if bo:
+        for dest, info in bo.items():
+            p = info.get("price", 0)
+            if isinstance(p, (int, float)) and (p < PRICE_FLOOR or p > PRICE_CEIL):
+                warnings.append(f"BEST_OFFERS[{dest}].price suspect: {p}$")
+    if flights:
+        suspect_fd = 0
+        for e in flights:
+            p = e.get("price", 0)
+            if isinstance(p, (int, float)) and (p < PRICE_FLOOR or p > PRICE_CEIL):
+                suspect_fd += 1
+        if suspect_fd:
+            warnings.append(
+                f"FLIGHT_DATA: {suspect_fd} prix suspect(s) "
+                f"(hors {PRICE_FLOOR}-{PRICE_CEIL}$)")
+
     return len(errors) == 0, errors, warnings
 
 
