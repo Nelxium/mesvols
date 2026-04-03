@@ -461,9 +461,10 @@ def main():
     for dest, r in by_dest.items():
         stops_text = r.get("escales", "")
         num_stops = parse_stops(stops_text)
-        airline_code = get_airline_code(r.get("airline", ""))
+        airline_name = normalize_airline(r.get("airline", ""))
+        airline_code = get_airline_code(airline_name)
         deal_id = make_deal_id(r["origin"], dest, r["depart"], r["retour"],
-                               airline_code, r.get("airline", ""))
+                               airline_code, airline_name)
         cap = captured_deals.get(deal_id)
         cap_live = ENABLE_DIRECT_BOOKING and cap and cap.get("success") and is_fresh(cap)
         reserve_url = BASE_URL + "/r/" + deal_id if cap_live else ""
@@ -485,7 +486,7 @@ def main():
             "best_source": "Google",
             "depart": r["depart"],
             "retour": r["retour"],
-            "airline": r.get("airline", ""),
+            "airline": airline_name,
             "airline_code": airline_code,
             "stops": stops_text,
             "score": compute_score(r["price_google"], 0, num_stops, None),
