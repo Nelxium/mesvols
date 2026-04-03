@@ -33,7 +33,7 @@ from main import get_airline_code
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STATE_PATH = os.path.join(HERE, "watchdog_state.json")
-DATA_JS_PATH = os.path.join(HERE, "data.js")
+DATA_JS_PATH = os.path.join(HERE, "docs", "data.js")
 
 
 def _load_public_state():
