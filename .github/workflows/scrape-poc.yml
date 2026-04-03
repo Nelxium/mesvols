@@ -42,10 +42,21 @@ jobs:
 
       - name: Commit and push if changed
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/data.js docs/ci_health.json
-          git diff --cached --quiet && echo "No changes to push" && exit 0
+          if git diff --cached --quiet; then
+            echo "No changes to push"
+            exit 0
+          fi
           git commit -m "update data"
-          git pull --rebase origin main
-          git push
+          # Retry loop : rebase + push, max 3 tentatives
+          for i in 1 2 3; do
+            echo "Push attempt $i..."
+            git pull --rebase origin main && git push && exit 0
+            echo "Push attempt $i failed, retrying in 5s..."
+            sleep 5
+          done
+          echo "ERROR: push failed after 3 attempts"
+          exit 1
