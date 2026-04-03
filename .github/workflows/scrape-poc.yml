@@ -47,4 +47,5 @@ jobs:
           git add docs/data.js docs/ci_health.json
           git diff --cached --quiet && echo "No changes to push" && exit 0
           git commit -m "update data"
+          git pull --rebase origin main
           git push
