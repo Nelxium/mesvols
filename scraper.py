@@ -521,7 +521,9 @@ def run_scraper(routes_subset=None):
     if errors:
         print(f"\n{len(errors)} route(s) en erreur : {', '.join(errors)}")
 
-    print(f"{len(all_results)}/{len(routes)} routes scrapees avec succes")
+    routes_ok = len(routes) - len(errors)
+    print(f"{routes_ok}/{len(routes)} route(s) scrapee(s) avec succes, "
+          f"{len(all_results)} resultat(s)")
     return all_results
 
 
