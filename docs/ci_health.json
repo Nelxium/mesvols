@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-03 22:49:52Z",
+  "generated_at": "2026-04-03 23:48:04Z",
   "status": "ok",
   "routes_expected": 24,
-  "routes_scraped": 24,
-  "coverage_pct": 100,
+  "routes_scraped": 22,
+  "coverage_pct": 92,
   "destinations": 8,
   "deals_detected": 3,
   "min_price": 334
