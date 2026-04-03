@@ -459,14 +459,42 @@ def save_to_csv(results):
 # Point d'entree
 # ---------------------------------------------------------------------------
 
-def run_scraper():
-    """Lance le scraping de toutes les routes."""
+def _resolve_routes(routes_subset=None):
+    """Valide et resout un sous-ensemble de routes.
+
+    Accepte des tuples (origin, dest) ou (origin, dest, name).
+    Les routes inconnues sont ignorees avec un warning.
+    Si routes_subset est None, retourne toutes les ROUTES.
+    """
+    if routes_subset is None:
+        return list(ROUTES)
+    routes_by_key = {(o, d): (o, d, n) for o, d, n in ROUTES}
+    resolved = []
+    for r in routes_subset:
+        key = (r[0], r[1])
+        if key in routes_by_key:
+            resolved.append(routes_by_key[key])
+        else:
+            print(f"  WARNING: route inconnue ignoree: {r}")
+    return resolved
+
+
+def run_scraper(routes_subset=None):
+    """Lance le scraping des routes demandees (toutes par defaut).
+
+    Args:
+        routes_subset: liste de tuples (origin, dest) ou (origin, dest, name).
+                       Si None, scrape toutes les routes de config.ROUTES.
+    """
     # Migration CSV si ancien format
     _migrate_csv()
 
+    routes = _resolve_routes(routes_subset)
+
     print("=" * 60)
     print(f"Scraping Google Flights - {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    print(f"{len(ROUTES)} routes a verifier")
+    print(f"{len(routes)} routes a verifier"
+          + (f" (sous-ensemble de {len(ROUTES)})" if routes_subset is not None else ""))
     print("=" * 60)
 
     run_ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%MZ")
@@ -475,7 +503,7 @@ def run_scraper():
     errors = []
 
     try:
-        for origin, destination, name in ROUTES:
+        for origin, destination, name in routes:
             try:
                 results = scrape_route(driver, origin, destination, name, run_ts)
                 all_results.extend(results)
@@ -493,7 +521,7 @@ def run_scraper():
     if errors:
         print(f"\n{len(errors)} route(s) en erreur : {', '.join(errors)}")
 
-    print(f"{len(all_results)}/{len(ROUTES)} routes scrapees avec succes")
+    print(f"{len(all_results)}/{len(routes)} routes scrapees avec succes")
     return all_results
 
 
