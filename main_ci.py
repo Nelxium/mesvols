@@ -5,16 +5,18 @@ Scrape + generation data.js, sans booking capture ni alertes.
 
 import json
 import os
+import re
 import sys
 from datetime import datetime, timezone
 
 from scraper import run_scraper, HORIZONS
 from config import ROUTES
-from main import generate_data_js, get_airline_code
+from main import generate_data_js, get_airline_code, DATA_JS_PATH
 from analyzer import find_deals, parse_stops, compute_score
 from links import build_skyscanner_url, build_search_link
 
 CI_HEALTH_PATH = os.path.join(os.path.dirname(__file__), "ci_health.json")
+DEST_CODES = {r[1] for r in ROUTES}
 
 # Seuil minimum de couverture pour publier (50% des resultats attendus)
 MIN_COVERAGE_RATIO = 0.50
@@ -38,6 +40,81 @@ def _write_health(results, by_dest, deals, status):
     with open(CI_HEALTH_PATH, "w", encoding="utf-8") as f:
         json.dump(health, f, ensure_ascii=False, indent=2)
     return health
+
+
+def validate_data_js(path=DATA_JS_PATH):
+    """Valide la structure et la sante de data.js avant publication.
+    Retourne (ok, errors, warnings)."""
+    errors = []
+    warnings = []
+
+    try:
+        with open(path, encoding="utf-8") as f:
+            content = f.read()
+    except FileNotFoundError:
+        return False, ["data.js introuvable"], []
+
+    # B1: FLIGHT_DATA non vide
+    m_fd = re.search(r"const FLIGHT_DATA = \[(.+?)\];", content, re.DOTALL)
+    if not m_fd or not m_fd.group(1).strip():
+        errors.append("FLIGHT_DATA vide ou absent")
+    else:
+        fd_count = content.count('"route":')
+        if fd_count == 0:
+            errors.append("FLIGHT_DATA ne contient aucune entree")
+
+    # B2: BEST_OFFERS non vide
+    m_bo = re.search(r"const BEST_OFFERS = ({.*?});", content, re.DOTALL)
+    if not m_bo:
+        errors.append("BEST_OFFERS absent")
+    else:
+        try:
+            bo = json.loads(m_bo.group(1))
+        except json.JSONDecodeError as e:
+            errors.append(f"BEST_OFFERS JSON invalide: {e}")
+            return False, errors, warnings
+
+        if not bo:
+            errors.append("BEST_OFFERS vide")
+        else:
+            # B4: tous les prix > 0
+            for dest, info in bo.items():
+                price = info.get("price", 0)
+                if not isinstance(price, (int, float)) or price <= 0:
+                    errors.append(f"BEST_OFFERS[{dest}].price invalide: {price}")
+
+            # B5: couverture des destinations (>= 50% des routes)
+            missing = DEST_CODES - set(bo.keys())
+            coverage = len(bo) / len(DEST_CODES) if DEST_CODES else 1
+            if coverage < 0.5:
+                errors.append(
+                    f"BEST_OFFERS couvre {len(bo)}/{len(DEST_CODES)} destinations "
+                    f"(manquent: {', '.join(sorted(missing))})")
+
+            # U1: coherence dates
+            m_upd = re.search(r'const LAST_UPDATE = "(.+?)"', content)
+            last_update = m_upd.group(1) if m_upd else ""
+            for dest, info in bo.items():
+                d = info.get("date", "")
+                if d and last_update and d != last_update:
+                    warnings.append(f"BEST_OFFERS[{dest}].date={d} != LAST_UPDATE={last_update}")
+                    break  # un seul warning suffit
+
+            # U2: search_url non vide
+            empty_urls = [d for d, i in bo.items() if not i.get("search_url")]
+            if empty_urls:
+                warnings.append(f"search_url vide pour: {', '.join(empty_urls)}")
+
+    # B3: LAST_UPDATE valide
+    m_upd = re.search(r'const LAST_UPDATE = "(.+?)"', content)
+    if not m_upd or not m_upd.group(1).strip():
+        errors.append("LAST_UPDATE vide ou absent")
+    else:
+        lu = m_upd.group(1)
+        if not re.match(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}", lu):
+            errors.append(f"LAST_UPDATE format invalide: {lu}")
+
+    return len(errors) == 0, errors, warnings
 
 
 def main():
@@ -119,7 +196,19 @@ def main():
     # 5. Regenerer data.js (seulement si couverture suffisante)
     generate_data_js(best_offers_current)
 
-    # 6. Ecrire ci_health.json
+    # 6. Valider data.js avant publication
+    ok, errs, warns = validate_data_js()
+    for w in warns:
+        print(f"  WARNING: {w}")
+    if not ok:
+        for e in errs:
+            print(f"  ERROR: {e}")
+        _write_health(results, by_dest, deals, "invalid")
+        print("\nPublication bloquee : data.js invalide.")
+        sys.exit(1)
+    print(f"data.js valide ({len(errs)} erreurs, {len(warns)} warnings)")
+
+    # 7. Ecrire ci_health.json
     health = _write_health(results, by_dest, deals, "ok")
     print(f"ci_health.json ecrit ({health['routes_scraped']}/{health['routes_expected']} routes, "
           f"{health['coverage_pct']}%)")
