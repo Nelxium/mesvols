@@ -9,7 +9,7 @@ import re
 import sys
 from datetime import datetime, timezone
 
-from scraper import run_scraper, HORIZONS
+from scraper import run_scraper, HORIZONS, normalize_airline, _ROUTE_CODE_RE
 from config import ROUTES
 from main import generate_data_js, get_airline_code, DATA_JS_PATH
 from analyzer import find_deals, parse_stops, compute_score
@@ -157,6 +157,22 @@ def validate_data_js(path=DATA_JS_PATH):
                 errors.append(
                     f"Destinations dans BEST_OFFERS mais absentes de FLIGHT_DATA courant: "
                     f"{', '.join(sorted(missing_in_fd))}")
+
+    # B7: qualite airline dans BEST_OFFERS
+    if bo:
+        bad_airlines = []
+        for dest, info in bo.items():
+            al = info.get("airline", "")
+            if not al or al == "Inconnue":
+                continue
+            if _ROUTE_CODE_RE.match(al.strip()):
+                bad_airlines.append(f"{dest}={al}")
+            elif al != normalize_airline(al):
+                bad_airlines.append(f"{dest}={al}")
+        if bad_airlines:
+            errors.append(
+                f"Airlines non normalisees dans BEST_OFFERS: "
+                f"{', '.join(bad_airlines[:5])}")
 
     # Warnings non-bloquants
     if bo and last_update:

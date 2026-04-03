@@ -10,7 +10,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timezone
 
-from scraper import run_scraper, get_driver
+from scraper import run_scraper, get_driver, normalize_airline
 from analyzer import find_deals, parse_stops, compute_score, MIN_DATAPOINTS
 from notifier import send_deal_alert
 from links import build_skyscanner_url, build_search_link
@@ -101,7 +101,7 @@ def generate_data_js(best_offers_current=None, screenshot_map=None, reval_map=No
             route = row.get("route", "")
             origin = row.get("origin", "")
             dest = row.get("destination", "")
-            airline = row.get("airline", "Inconnue")
+            airline = normalize_airline(row.get("airline", "Inconnue"))
             stops = row.get("escales", "")
             depart = row.get("depart", "")
             retour = row.get("retour", "")

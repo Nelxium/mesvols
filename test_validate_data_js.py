@@ -345,6 +345,52 @@ def test_bidirectional_coherent():
         os.unlink(p)
 
 
+# --- Tests qualite airline dans le gate ---
+
+def test_bo_route_code_airline_blocked():
+    """BEST_OFFERS avec airline = code route (YUL-JFK) = erreur."""
+    p = _tmp()
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    bo = {d: {"price": 500 + i * 100, "date": LU, "search_url": "https://...",
+              "airline": "Air Canada" if d != "CDG" else "YUL\u2013JFK"}
+          for i, d in enumerate(dests)}
+    _write_js(p, flight_data=_good_fd(dests), best_offers=json.dumps(bo))
+    try:
+        ok, errs, _ = validate_data_js(p)
+        assert not ok, f"Route-code airline should block: {errs}"
+        assert any("Airlines non normalisees" in e for e in errs)
+    finally:
+        os.unlink(p)
+
+
+def test_bo_concatenated_airline_blocked():
+    """BEST_OFFERS avec airline concatenee = erreur."""
+    p = _tmp()
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    bo = {d: {"price": 500 + i * 100, "date": LU, "search_url": "https://...",
+              "airline": "Air FranceDelta" if d == "CDG" else "United"}
+          for i, d in enumerate(dests)}
+    _write_js(p, flight_data=_good_fd(dests), best_offers=json.dumps(bo))
+    try:
+        ok, errs, _ = validate_data_js(p)
+        assert not ok, f"Concatenated airline should block: {errs}"
+        assert any("Airlines non normalisees" in e for e in errs)
+    finally:
+        os.unlink(p)
+
+
+def test_bo_clean_airlines_pass():
+    """BEST_OFFERS avec airlines propres = OK."""
+    p = _tmp()
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    _write_js(p, flight_data=_good_fd(dests), best_offers=_good_bo(dests))
+    try:
+        ok, errs, _ = validate_data_js(p)
+        assert ok, f"Clean airlines should pass: {errs}"
+    finally:
+        os.unlink(p)
+
+
 if __name__ == "__main__":
     tests = [f for f in dir() if f.startswith("test_")]
     passed = 0
