@@ -54,17 +54,49 @@ def validate_data_js(path=DATA_JS_PATH):
     except FileNotFoundError:
         return False, ["data.js introuvable"], []
 
-    # B1: FLIGHT_DATA non vide
-    m_fd = re.search(r"const FLIGHT_DATA = \[(.+?)\];", content, re.DOTALL)
-    if not m_fd or not m_fd.group(1).strip():
-        errors.append("FLIGHT_DATA vide ou absent")
+    # B1: FLIGHT_DATA — parser et valider chaque entree
+    m_fd = re.search(r"const FLIGHT_DATA = (\[.+?\]);", content, re.DOTALL)
+    flights = []
+    if not m_fd:
+        errors.append("FLIGHT_DATA absent")
     else:
-        fd_count = content.count('"route":')
-        if fd_count == 0:
-            errors.append("FLIGHT_DATA ne contient aucune entree")
+        try:
+            flights = json.loads(m_fd.group(1))
+        except json.JSONDecodeError as e:
+            errors.append(f"FLIGHT_DATA JSON invalide: {e}")
+            return False, errors, warnings
+        if not flights:
+            errors.append("FLIGHT_DATA vide")
+        else:
+            fd_required = ("destination", "route", "price", "date")
+            bad_records = 0
+            for i, entry in enumerate(flights):
+                for field in fd_required:
+                    if not entry.get(field):
+                        bad_records += 1
+                        break
+                else:
+                    p = entry.get("price", 0)
+                    if not isinstance(p, (int, float)) or p <= 0:
+                        bad_records += 1
+            if bad_records > 0:
+                errors.append(
+                    f"FLIGHT_DATA: {bad_records}/{len(flights)} entrees invalides "
+                    f"(champs requis: {', '.join(fd_required)}, price > 0)")
 
-    # B2: BEST_OFFERS non vide
+    # B3: LAST_UPDATE valide (lu tot pour la coherence ci-dessous)
+    m_upd = re.search(r'const LAST_UPDATE = "(.+?)"', content)
+    last_update = ""
+    if not m_upd or not m_upd.group(1).strip():
+        errors.append("LAST_UPDATE vide ou absent")
+    else:
+        last_update = m_upd.group(1)
+        if not re.match(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}", last_update):
+            errors.append(f"LAST_UPDATE format invalide: {last_update}")
+
+    # B2: BEST_OFFERS non vide + prix valides
     m_bo = re.search(r"const BEST_OFFERS = ({.*?});", content, re.DOTALL)
+    bo = {}
     if not m_bo:
         errors.append("BEST_OFFERS absent")
     else:
@@ -77,42 +109,42 @@ def validate_data_js(path=DATA_JS_PATH):
         if not bo:
             errors.append("BEST_OFFERS vide")
         else:
-            # B4: tous les prix > 0
             for dest, info in bo.items():
                 price = info.get("price", 0)
                 if not isinstance(price, (int, float)) or price <= 0:
                     errors.append(f"BEST_OFFERS[{dest}].price invalide: {price}")
 
-            # B5: couverture des destinations (>= 50% des routes)
-            missing = DEST_CODES - set(bo.keys())
+            # Couverture minimale (garde-fou large)
             coverage = len(bo) / len(DEST_CODES) if DEST_CODES else 1
             if coverage < 0.5:
+                missing = DEST_CODES - set(bo.keys())
                 errors.append(
                     f"BEST_OFFERS couvre {len(bo)}/{len(DEST_CODES)} destinations "
                     f"(manquent: {', '.join(sorted(missing))})")
 
-            # U1: coherence dates
-            m_upd = re.search(r'const LAST_UPDATE = "(.+?)"', content)
-            last_update = m_upd.group(1) if m_upd else ""
-            for dest, info in bo.items():
-                d = info.get("date", "")
-                if d and last_update and d != last_update:
-                    warnings.append(f"BEST_OFFERS[{dest}].date={d} != LAST_UPDATE={last_update}")
-                    break  # un seul warning suffit
+    # B6: coherence FLIGHT_DATA cycle courant ↔ BEST_OFFERS
+    # Toute destination presente dans FLIGHT_DATA du cycle courant
+    # doit avoir une entree dans BEST_OFFERS.
+    if flights and bo and last_update:
+        fd_current_dests = {e["destination"] for e in flights
+                           if e.get("date") == last_update and e.get("destination")}
+        bo_dests = set(bo.keys())
+        missing_in_bo = fd_current_dests - bo_dests
+        if missing_in_bo:
+            errors.append(
+                f"Destinations dans FLIGHT_DATA courant mais absentes de BEST_OFFERS: "
+                f"{', '.join(sorted(missing_in_bo))}")
 
-            # U2: search_url non vide
-            empty_urls = [d for d, i in bo.items() if not i.get("search_url")]
-            if empty_urls:
-                warnings.append(f"search_url vide pour: {', '.join(empty_urls)}")
-
-    # B3: LAST_UPDATE valide
-    m_upd = re.search(r'const LAST_UPDATE = "(.+?)"', content)
-    if not m_upd or not m_upd.group(1).strip():
-        errors.append("LAST_UPDATE vide ou absent")
-    else:
-        lu = m_upd.group(1)
-        if not re.match(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}", lu):
-            errors.append(f"LAST_UPDATE format invalide: {lu}")
+    # Warnings non-bloquants
+    if bo and last_update:
+        for dest, info in bo.items():
+            d = info.get("date", "")
+            if d and d != last_update:
+                warnings.append(f"BEST_OFFERS[{dest}].date={d} != LAST_UPDATE={last_update}")
+                break
+        empty_urls = [d for d, i in bo.items() if not i.get("search_url")]
+        if empty_urls:
+            warnings.append(f"search_url vide pour: {', '.join(empty_urls)}")
 
     return len(errors) == 0, errors, warnings
 
