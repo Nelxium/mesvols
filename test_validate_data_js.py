@@ -279,9 +279,8 @@ def test_last_update_with_z_suffix():
 
 
 def test_zero_fd_rows_at_last_update():
-    """Aucune ligne FLIGHT_DATA au timestamp LAST_UPDATE = erreur."""
+    """Aucune ligne FLIGHT_DATA dans le cycle courant = erreur."""
     p = _tmp()
-    # FLIGHT_DATA a un timestamp different de LAST_UPDATE
     fd = json.dumps([
         {"destination": "CDG", "route": "a", "price": 500, "date": "2026-04-02 12:00Z"},
         {"destination": "CUN", "route": "b", "price": 400, "date": "2026-04-02 12:00Z"},
@@ -292,6 +291,56 @@ def test_zero_fd_rows_at_last_update():
         ok, errs, _ = validate_data_js(p)
         assert not ok, f"Should fail with zero current-cycle rows: {errs}"
         assert any("Aucune entree FLIGHT_DATA" in e for e in errs)
+    finally:
+        os.unlink(p)
+
+
+# --- Tests alignement producteur : prefix horaire + coherence bidirectionnelle ---
+
+def test_per_row_timestamps_same_hour_pass():
+    """Cycle courant avec timestamps per-row dans la meme heure = OK."""
+    p = _tmp()
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    # Timestamps differents mais meme heure que LAST_UPDATE
+    fd = json.dumps([
+        {"destination": d, "route": f"Montreal -> {d}", "price": 500 + i * 100,
+         "date": f"2026-04-03 12:{i:02d}Z", "stops": "Direct",
+         "depart": "2026-06-01", "retour": "2026-06-08"}
+        for i, d in enumerate(dests)
+    ])
+    # LAST_UPDATE = derniere ligne = 12:04Z
+    _write_js(p, flight_data=fd, best_offers=_good_bo(dests), last_update="2026-04-03 12:04Z")
+    try:
+        ok, errs, _ = validate_data_js(p)
+        assert ok, f"Per-row timestamps in same hour should pass: {errs}"
+    finally:
+        os.unlink(p)
+
+
+def test_bo_dest_missing_from_fd_current():
+    """Destination dans BEST_OFFERS mais absente de FLIGHT_DATA courant = erreur."""
+    p = _tmp()
+    # FD courant a CDG, CUN, NRT, HND — mais BO a aussi PUJ
+    fd = _good_fd(("CDG", "CUN", "NRT", "HND"))
+    bo = _good_bo(("CDG", "CUN", "NRT", "HND", "PUJ"))
+    _write_js(p, flight_data=fd, best_offers=bo)
+    try:
+        ok, errs, _ = validate_data_js(p)
+        assert not ok, f"Should fail with BO dest missing from FD: {errs}"
+        assert any("PUJ" in e for e in errs)
+        assert any("absentes de FLIGHT_DATA" in e for e in errs)
+    finally:
+        os.unlink(p)
+
+
+def test_bidirectional_coherent():
+    """FD courant et BO ont exactement les memes destinations = OK."""
+    p = _tmp()
+    dests = ("CDG", "CUN", "NRT", "HND", "PUJ")
+    _write_js(p, flight_data=_good_fd(dests), best_offers=_good_bo(dests))
+    try:
+        ok, errs, _ = validate_data_js(p)
+        assert ok, f"Bidirectional coherent should pass: {errs}"
     finally:
         os.unlink(p)
 

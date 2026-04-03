@@ -123,19 +123,40 @@ def validate_data_js(path=DATA_JS_PATH):
                     f"(manquent: {', '.join(sorted(missing))})")
 
     # B6: coherence FLIGHT_DATA cycle courant ↔ BEST_OFFERS
+    # Meme logique que generate_data_js() : le cycle courant = toutes les lignes
+    # consecutives en fin de FLIGHT_DATA dont le prefix horaire ([:13]) correspond
+    # au dernier timestamp. Robuste avec des timestamps per-row legacy.
     if flights and bo and last_update:
+        last_hour = last_update[:13] if len(last_update) >= 13 else last_update
+        last_cycle_dates = set()
+        for e in reversed(flights):
+            d = e.get("date", "")
+            if d[:13] == last_hour:
+                last_cycle_dates.add(d)
+            else:
+                break
+
         fd_current = [e for e in flights
-                      if e.get("date") == last_update and e.get("destination")]
+                      if e.get("date") in last_cycle_dates and e.get("destination")]
         if not fd_current:
             errors.append(
-                f"Aucune entree FLIGHT_DATA au timestamp LAST_UPDATE ({last_update})")
+                f"Aucune entree FLIGHT_DATA dans le cycle courant "
+                f"(prefix horaire {last_hour})")
         else:
             fd_current_dests = {e["destination"] for e in fd_current}
-            missing_in_bo = fd_current_dests - set(bo.keys())
+            bo_dests = set(bo.keys())
+            # Sens 1 : FD courant → BO
+            missing_in_bo = fd_current_dests - bo_dests
             if missing_in_bo:
                 errors.append(
                     f"Destinations dans FLIGHT_DATA courant mais absentes de BEST_OFFERS: "
                     f"{', '.join(sorted(missing_in_bo))}")
+            # Sens 2 : BO → FD courant
+            missing_in_fd = bo_dests - fd_current_dests
+            if missing_in_fd:
+                errors.append(
+                    f"Destinations dans BEST_OFFERS mais absentes de FLIGHT_DATA courant: "
+                    f"{', '.join(sorted(missing_in_fd))}")
 
     # Warnings non-bloquants
     if bo and last_update:
